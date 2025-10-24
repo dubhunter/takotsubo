@@ -1,7 +1,7 @@
 # takotsubo
 _(Traditional Japanese ~~Octocat~~ Octopus Trap)_
 
-Gmail filters are great for what they _can_do, but there are some things they cannot (compound rules/actions, special character matching, etc).
+Gmail filters are great for what they _can_ do, but there are some things they cannot (compound rules/actions, special character matching, etc).
 
 Enter Takotsubo, a powerful email filtering engine tailored for GitHub notifications.
 
@@ -20,7 +20,19 @@ Enter Takotsubo, a powerful email filtering engine tailored for GitHub notificat
 - When a filter matches the rule, it will run the "action" which may label/un-label, archive/un-archive, or move to trash.
 - That's it!
 
-## Installation
+### Current Labels ([source](https://github.com/dubhunter/takotsubo/blob/master/src/lib/types.ts#L5))
+- GH
+- GH/Approved
+- GH/Author
+- GH/CI
+- GH/Closed
+- GH/Direct Review
+- GH/Mention
+- GH/Merged
+- GH/Queued
+- GH/Team Review
+
+## (Local) Installation
 ```shell
 npm install -g @google/clasp
 npm -i
@@ -32,13 +44,16 @@ npm -i
 - Get the `Script ID` from "Project Settings"
 - Add `Script ID` to `.clasp.json`
 - Run `clasp login` in CLI
+
 ### Configure App
 - Edit `src/lib/config.ts` (change `usernameUser` & `usernameTeam`)
+
 ### Deploy
 ```shell
 npm run build
 npm run deploy
 ```
+
 ### Configure Trigger
 - Go to "Triggers" (In GAS UI)
 - Add Trigger
@@ -48,6 +63,7 @@ npm run deploy
   - Interval: `Every minute`
   - Failure notifications: `Notify me immediately`
   - `Save`
+
 ### Configure Gmail
 (The above should have created all the Labels)
 
