@@ -1,5 +1,24 @@
-# gmail-github-filters
-Google Apps Script for filtering GitHub emails.
+# takotsubo
+_(Traditional Japanese ~~Octocat~~ Octopus Trap)_
+
+Gmail filters are great for what they _can_do, but there are some things they cannot (compound rules/actions, special character matching, etc).
+
+Enter Takotsubo, a powerful email filtering engine tailored for GitHub notifications.
+
+## Features (Goals)
+- Regular Expression matching.
+- Exact string matching.
+- Special character handling.
+- Compound and/or rules & actions.
+- Automatically create labels in Gmail.
+- Try not to be destructive.
+- Preserve the Inbox for stuff that _actually_ deserves your attention.
+
+### General Flow
+- Gmail will label and archive _all_ GH emails.
+- Takotsubo will run every minute (configurable), and evaluate all filters.
+- When a filter matches the rule, it will run the "action" which may label/un-label, archive/un-archive, or move to trash.
+- That's it!
 
 ## Installation
 ```shell
@@ -36,7 +55,7 @@ We just need one Filter (apply to existing matches)
 - Matches: `from:(@github.com)`
 - Do this: `Skip Inbox, Apply label "GH"`
 
-## Development
+## Development (PRs Welcome)
 Run the following command to build and deploy to GAS.
 ```shell
 npm run watch
