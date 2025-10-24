@@ -29,6 +29,12 @@ npm run deploy
   - Interval: `Every minute`
   - Failure notifications: `Notify me immediately`
   - `Save`
+### Configure Gmail
+(The above should have created all the Labels)
+
+We just need one Filter (apply to existing matches)
+- Matches: `from:(@github.com)`
+- Do this: `Skip Inbox, Apply label "GH"`
 
 ## Development
 Run the following command to build and deploy to GAS.
