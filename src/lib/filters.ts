@@ -12,7 +12,8 @@ const gmailFilters: GmailFilter[] = [
     },
     {
         name: 'Author',
-        rule: message => message.getCc().includes(config.emailAuthor),
+        rule: message => message.getCc().includes(config.emailAuthor)
+            || message.getPlainBody().includes('You are receiving this because you modified the open/close state.'),
         action: message => {
             actions.addLabelToMessage(LabelName.Author, message);
             message.getThread().moveToInbox();
@@ -87,10 +88,8 @@ const gmailFilters: GmailFilter[] = [
     },
     {
         name: 'Reopened',
-        rule: message => {
-            return helpers.hasLabel(LabelName.Closed, message)
-                && new RegExp('Reopened #[0-9]+\\./').test(message.getPlainBody());
-        },
+        rule: message => helpers.hasLabel(LabelName.Closed, message)
+                && new RegExp('Reopened #[0-9]+\\./').test(message.getPlainBody()),
         action: message => actions.removeLabelFromMessage(LabelName.Closed, message),
         lastFilter: false,
     },
