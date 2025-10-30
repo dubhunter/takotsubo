@@ -1,7 +1,7 @@
 # takotsubo
 _(Traditional Japanese ~~Octocat~~ Octopus Trap)_
 
-Gmail filters are great for what they _can_ do, but there are some things they cannot (compound rules/actions, special character matching, etc).
+Gmail filters are great for what they _can_ do, but there are some things they cannot (compound rules/actions, special character matching, etc.).
 
 Enter Takotsubo, a powerful email filtering engine tailored for GitHub notifications.
 
