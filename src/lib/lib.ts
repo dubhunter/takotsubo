@@ -10,7 +10,7 @@ const actions = {
 };
 
 const helpers = {
-    hasLabels: (labelNames: LabelName[], message: GmailMessage): boolean => {
+    hasAnyLabels: (labelNames: LabelName[], message: GmailMessage): boolean => {
         for (const label of message.getThread().getLabels()) {
             if (labelNames.includes(label.getName() as LabelName)) {
                 return true;
@@ -19,6 +19,6 @@ const helpers = {
         return false;
     },
     hasLabel: (labelName: LabelName, message: GmailMessage): boolean => {
-        return helpers.hasLabels([labelName], message);
+        return helpers.hasAnyLabels([labelName], message);
     }
 };

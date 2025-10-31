@@ -4,7 +4,7 @@ const gmailFilters: GmailFilter[] = [
         rule: message => new RegExp('@[A-Za-z0-9-]+ approved this pull request\\.').test(message.getPlainBody()),
         action: message => {
             actions.addLabelToMessage(LabelName.Approved, message);
-            if (!helpers.hasLabels([LabelName.Author, LabelName.DirectReview], message)) {
+            if (!helpers.hasAnyLabels([LabelName.Author, LabelName.DirectReview], message)) {
                 message.getThread().moveToArchive();
             }
         },
@@ -38,7 +38,7 @@ const gmailFilters: GmailFilter[] = [
         rule: message => new RegExp('Closed #[0-9]+\\.').test(message.getPlainBody()),
         action: message => {
             actions.addLabelToMessage(LabelName.Closed, message);
-            if (!helpers.hasLabels([LabelName.Author, LabelName.DirectReview], message)) {
+            if (!helpers.hasAnyLabels([LabelName.Author, LabelName.DirectReview], message)) {
                 message.getThread().moveToTrash();
             }
         },
@@ -68,7 +68,7 @@ const gmailFilters: GmailFilter[] = [
         action: message => {
             actions.removeLabelFromMessage(LabelName.Queued, message);
             actions.addLabelToMessage(LabelName.Merged, message);
-            if (!helpers.hasLabels([LabelName.Author, LabelName.DirectReview], message)) {
+            if (!helpers.hasAnyLabels([LabelName.Author, LabelName.DirectReview], message)) {
                 message.getThread().moveToTrash();
             }
         },
