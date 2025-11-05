@@ -29,6 +29,7 @@ Enter Takotsubo, a powerful email filtering engine tailored for GitHub notificat
 - GH/Direct Review
 - GH/Mention
 - GH/Merged
+- GH/Muted
 - GH/Queued
 - GH/Team Review
 
