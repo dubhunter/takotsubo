@@ -7,7 +7,8 @@
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "none",
-    "target": "ESNext",
+    "target": "es2021", // Required until GAS supports private class fields
+    "useDefineForClassFields": true, // Required until GAS supports private class fields
     "types": [
       "@types/google-apps-script"
     ],
