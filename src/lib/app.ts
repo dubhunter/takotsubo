@@ -1,14 +1,21 @@
 const userProperties = PropertiesService.getUserProperties();
 
 const app = {
-    setLastMessageTime: (message: GmailMessage) => {
-        const messageTime = message.getDate().getTime() / 1000;
+    setLastMessage: (message: TakoMessage) => {
+        const messageId = message.getId();
+        if (messageId !== app.getLastMessageId()) {
+            userProperties.setProperty(UserProp.LastMessageId, messageId);
+        }
+        const messageTime = message.getTimestamp();
         if (messageTime > app.getLastMessageTime()) {
             userProperties.setProperty(UserProp.LastMessageTimestamp, messageTime.toString());
         }
     },
     getLastMessageTime: () => {
         return Number(userProperties.getProperty(UserProp.LastMessageTimestamp) || 0);
+    },
+    getLastMessageId: () => {
+        return userProperties.getProperty(UserProp.LastMessageId);
     },
     resetProperties: () => {
         userProperties.deleteAllProperties();
@@ -33,6 +40,7 @@ const app = {
     },
     processNewMessages: () => {
         app.ensureLabels();
+        const lastMessageId = app.getLastMessageId();
         const query = `label:GH after:${app.getLastMessageTime() + 1}`;
         console.info(`Searching: ${query}`);
         const threads = GmailApp.search(query);
@@ -42,16 +50,20 @@ const app = {
             console.info(`Processing thread ${i + 1}/${count}: ${thread.getFirstMessageSubject()}`);
             const messages = thread.getMessages();
             for (const message of messages) {
+                const tMessage = new TakoMessage(message);
+                if (tMessage.getId() === lastMessageId) {
+                    continue;
+                }
                 for (const filter of gmailFilters) {
-                    if (filter.rule(message)) {
+                    if (filter.rule(tMessage)) {
                         console.info(`Running action for filter: ${filter.name}`);
-                        filter.action(message);
+                        filter.action(tMessage);
                         if (filter.lastFilter) {
                             break
                         }
                     }
                 }
-                app.setLastMessageTime(message);
+                app.setLastMessage(tMessage);
             }
         }
         console.info('Done!');

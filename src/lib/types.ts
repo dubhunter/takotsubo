@@ -1,7 +1,3 @@
-type GmailLabel = GoogleAppsScript.Gmail.GmailLabel;
-type GmailMessage = GoogleAppsScript.Gmail.GmailMessage;
-type GmailThread = GoogleAppsScript.Gmail.GmailThread;
-
 enum LabelName {
     Root = 'GH',
     Approved = 'GH/Approved',
@@ -11,18 +7,20 @@ enum LabelName {
     DirectReview = 'GH/Direct Review',
     Mention = 'GH/Mention',
     Merged = 'GH/Merged',
+    Muted = 'GH/Muted',
     Queued = 'GH/Queued',
     TeamReview = 'GH/Team Review',
 }
 
 enum UserProp {
+    LastMessageId = 'LAST_MESSAGE_ID',
     LastMessageTimestamp = 'LAST_MESSAGE_TIMESTAMP',
 }
 
 type GmailFilter = {
     name: string;
-    rule: (message: GmailMessage) => boolean;
-    action: (message: GmailMessage) => void;
+    rule: (message: TakoMessage) => boolean;
+    action: (message: TakoMessage) => void;
     lastFilter: boolean;
 };
 

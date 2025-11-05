@@ -1,105 +1,77 @@
 const gmailFilters: GmailFilter[] = [
     {
         name: 'Approved',
-        rule: message => new RegExp('@[A-Za-z0-9-]+ approved this pull request\\.').test(message.getPlainBody()),
-        action: message => {
-            actions.addLabelToMessage(LabelName.Approved, message);
-            if (!helpers.hasAnyLabels([LabelName.Author, LabelName.DirectReview], message)) {
-                message.getThread().moveToArchive();
-            }
-        },
+        rule: t => t.bodyContains(new RegExp('@[A-Za-z0-9-]+ approved this pull request\\.')),
+        action: t => t.addLabel(LabelName.Approved).moveToArchive([LabelName.Author, LabelName.DirectReview]),
         lastFilter: false,
     },
     {
         name: 'Author',
-        rule: message => message.getCc().includes(config.emailAuthor)
-            || message.getPlainBody().includes('You are receiving this because you modified the open/close state.'),
-        action: message => {
-            actions.addLabelToMessage(LabelName.Author, message);
-            message.getThread().moveToInbox();
-        },
+        rule: t => t.ccContains(config.emailAuthor)
+            || t.bodyContains('You are receiving this because you modified the open/close state.'),
+        action: t => t.addLabel(LabelName.Author).moveToInbox(),
         lastFilter: false,
     },
     {
         name: 'CI',
-        rule: message => message.getCc().includes(config.emailCI),
-        action: message => {
-            actions.addLabelToMessage(LabelName.CI, message);
-            if (message.getSubject().includes("Run cancelled:")) {
-                message.getThread().moveToTrash();
+        rule: t => t.ccContains(config.emailCI),
+        action: t => {
+            t.addLabel(LabelName.CI);
+            if (t.subjectContains("Run cancelled:")) {
+                t.moveToTrash();
             } else {
-                message.getThread().moveToInbox();
+                t.moveToInbox();
             }
         },
         lastFilter: false,
     },
     {
         name: 'Closed',
-        rule: message => new RegExp('Closed #[0-9]+\\.').test(message.getPlainBody()),
-        action: message => {
-            actions.addLabelToMessage(LabelName.Closed, message);
-            if (!helpers.hasAnyLabels([LabelName.Author, LabelName.DirectReview], message)) {
-                message.getThread().moveToTrash();
-            }
-        },
+        rule: t => t.bodyContains(new RegExp('Closed #[0-9]+\\.')),
+        action: t => t.addLabel(LabelName.Closed).moveToTrash([LabelName.Author, LabelName.DirectReview]),
         lastFilter: false,
     },
     {
         name: 'Direct Review',
-        rule: message => new RegExp('@[A-Za-z0-9-]+ requested your review on:').test(message.getPlainBody()),
-        action: message => {
-            actions.addLabelToMessage(LabelName.DirectReview, message);
-            message.getThread().moveToInbox();
-        },
+        rule: t => t.bodyContains(new RegExp('@[A-Za-z0-9-]+ requested your review on:')),
+        action: t => t.addLabel(LabelName.DirectReview).moveToInbox([LabelName.Muted]),
         lastFilter: false,
     },
     {
         name: 'Mention',
-        rule: message => message.getPlainBody().includes(config.usernameUser),
-        action: message => {
-            actions.addLabelToMessage(LabelName.Mention, message);
-            message.getThread().moveToInbox();
-        },
+        rule: t => t.bodyContains(config.usernameUser),
+        action: t => t.addLabel(LabelName.Mention).moveToInbox([LabelName.Muted]),
         lastFilter: false,
     },
     {
         name: 'Merged',
-        rule: message => new RegExp('Merged #[0-9]+( into (main|master))?\\.').test(message.getPlainBody()),
-        action: message => {
-            actions.removeLabelFromMessage(LabelName.Queued, message);
-            actions.addLabelToMessage(LabelName.Merged, message);
-            if (!helpers.hasAnyLabels([LabelName.Author, LabelName.DirectReview], message)) {
-                message.getThread().moveToTrash();
-            }
-        },
+        rule: t => t.bodyContains(new RegExp('Merged #[0-9]+( into (main|master))?\\.')),
+        action: t => t.removeLabel(LabelName.Queued).addLabel(LabelName.Merged).moveToTrash([LabelName.Author, LabelName.DirectReview]),
         lastFilter: false,
     },
     {
         name: 'Queued',
-        rule: message => new RegExp('#[0-9]+ was added to the \\[merge queue]').test(message.getPlainBody()),
-        action: message => actions.addLabelToMessage(LabelName.Queued, message),
+        rule: t => t.bodyContains(new RegExp('#[0-9]+ was added to the \\[merge queue]')),
+        action: t => t.addLabel(LabelName.Queued),
         lastFilter: false,
     },
     {
         name: 'UnQueued',
-        rule: message => new RegExp('#[0-9]+ was automatically removed from the \\[merge queue]').test(message.getPlainBody()),
-        action: message => actions.removeLabelFromMessage(LabelName.Queued, message),
+        rule: t => t.bodyContains(new RegExp('#[0-9]+ was automatically removed from the \\[merge queue]')),
+        action: t => t.removeLabel(LabelName.Queued),
         lastFilter: false,
     },
     {
         name: 'Reopened',
-        rule: message => helpers.hasLabel(LabelName.Closed, message)
-                && new RegExp('Reopened #[0-9]+\\./').test(message.getPlainBody()),
-        action: message => actions.removeLabelFromMessage(LabelName.Closed, message),
+        rule: t => t.hasLabel(LabelName.Closed)
+            && t.bodyContains(new RegExp('Reopened #[0-9]+\\./')),
+        action: t => t.removeLabel(LabelName.Closed),
         lastFilter: false,
     },
     {
         name: 'Team Review',
-        rule: message => new RegExp(`@[A-Za-z0-9-]+ requested review from ${config.usernameTeam} on:`).test(message.getPlainBody()),
-        action: message => {
-            actions.addLabelToMessage(LabelName.TeamReview, message);
-            message.getThread().moveToInbox();
-        },
+        rule: t => t.bodyContains(new RegExp(`@[A-Za-z0-9-]+ requested review from ${config.usernameTeam} on:`)),
+        action: t => t.addLabel(LabelName.TeamReview).moveToInbox([LabelName.Muted]),
         lastFilter: false,
     },
 ];
