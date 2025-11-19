@@ -21,17 +21,7 @@ Enter Takotsubo, a powerful email filtering engine tailored for GitHub notificat
 - That's it!
 
 ### Current Labels ([source](https://github.com/dubhunter/takotsubo/blob/master/src/lib/types.ts#L5))
-- GH
-- GH/Approved
-- GH/Author
-- GH/CI
-- GH/Closed
-- GH/Direct Review
-- GH/Mention
-- GH/Merged
-- GH/Muted
-- GH/Queued
-- GH/Team Review
+![Screenshot of labels (including colors)](assets/screenshot-labels.png)
 
 ## (Local) Installation
 ```shell
