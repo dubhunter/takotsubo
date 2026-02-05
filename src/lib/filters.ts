@@ -45,7 +45,7 @@ const gmailFilters: GmailFilter[] = [
     },
     {
         name: 'Merged',
-        rule: t => t.bodyContains(new RegExp('Merged #[0-9]+( into (main|master))?\\.')),
+        rule: t => t.bodyContains(new RegExp('Merged #[0-9]+( into [^ ]+)?\\.')),
         action: t => t.removeLabel(LabelName.Queued).addLabel(LabelName.Merged).moveToTrash([LabelName.Author, LabelName.DirectReview]),
         lastFilter: false,
     },
