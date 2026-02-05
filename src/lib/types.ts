@@ -30,3 +30,7 @@ type UserConfig = {
     usernameUser: string;
     usernameTeam: string;
 }
+
+type MoveActionOptions = {
+    ifNotHasLabelsAny: LabelName[];
+}

@@ -40,18 +40,18 @@ class TakoMessage {
         }
     }
 
-    moveToArchive(skipIfHasLabelsAny: LabelName[] = []): TakoMessage {
-        this.runIfNotHasLabelsAny(skipIfHasLabelsAny, () => this.message.getThread().moveToArchive());
+    moveToArchive(options: MoveActionOptions = {ifNotHasLabelsAny: []}): TakoMessage {
+        this.runIfNotHasLabelsAny(options.ifNotHasLabelsAny, () => this.message.getThread().moveToArchive());
         return this;
     }
 
-    moveToInbox(skipIfHasLabelsAny: LabelName[] = []): TakoMessage {
-        this.runIfNotHasLabelsAny(skipIfHasLabelsAny, () => this.message.getThread().moveToInbox());
+    moveToInbox(options: MoveActionOptions = {ifNotHasLabelsAny: []}): TakoMessage {
+        this.runIfNotHasLabelsAny(options.ifNotHasLabelsAny, () => this.message.getThread().moveToInbox());
         return this;
     }
 
-    moveToTrash(skipIfHasLabelsAny: LabelName[] = []): TakoMessage {
-        this.runIfNotHasLabelsAny(skipIfHasLabelsAny, () => this.message.getThread().moveToTrash());
+    moveToTrash(options: MoveActionOptions = {ifNotHasLabelsAny: []}): TakoMessage {
+        this.runIfNotHasLabelsAny(options.ifNotHasLabelsAny, () => this.message.getThread().moveToTrash());
         return this;
     }
 
