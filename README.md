@@ -20,7 +20,7 @@ Enter Takotsubo, a powerful email filtering engine tailored for GitHub notificat
 - When a filter matches the rule, it will run the "action" which may label/un-label, archive/un-archive, or move to trash.
 - That's it!
 
-### Current Labels ([source](https://github.com/dubhunter/takotsubo/blob/master/src/lib/types.ts)) & Filters ([source](https://github.com/dubhunter/takotsubo/blob/master/src/lib/filters.ts))
+### Current [Labels](https://github.com/dubhunter/takotsubo/blob/master/src/lib/types.ts) / [Filters](https://github.com/dubhunter/takotsubo/blob/master/src/lib/filters.ts)
 ![Screenshot of labels (including colors)](assets/screenshot-labels.png)
 
 ## (Local) Installation
