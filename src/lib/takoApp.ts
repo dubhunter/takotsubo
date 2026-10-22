@@ -16,23 +16,12 @@ class TakoApp {
         console.info(message);
     }
 
-    private setLastMessage(message: TakoMessage): void {
-        const messageId = message.getId();
-        if (messageId !== this.getLastMessageId()) {
-            this.userProperties.setProperty(UserProp.LastMessageId, messageId);
-        }
-        const messageTime = message.getTimestamp();
-        if (messageTime > this.getLastMessageTime()) {
-            this.userProperties.setProperty(UserProp.LastMessageTimestamp, messageTime.toString());
-        }
+    private setLastMessageTime(time: number): void {
+        this.userProperties.setProperty(UserProp.LastMessageTimestamp, time.toString());
     }
 
     private getLastMessageTime(): number {
-        return Number(this.userProperties.getProperty(UserProp.LastMessageTimestamp) || 0);
-    }
-
-    private getLastMessageId(): string | null {
-        return this.userProperties.getProperty(UserProp.LastMessageId);
+        return Math.floor(Number(this.userProperties.getProperty(UserProp.LastMessageTimestamp) || 0));
     }
 
     private createLabel(labelName: string): void {
@@ -78,8 +67,9 @@ class TakoApp {
 
     processNewMessages(): TakoApp {
         this.ensureLabels();
-        const lastMessageId = this.getLastMessageId();
-        const query = `label:GH after:${this.getLastMessageTime() + 1}`;
+        let cursor = this.getLastMessageTime();
+        // after: includes the cursor's own second, so a thread ending in it is replayed rather than missed.
+        const query = `label:GH after:${cursor}`;
         const threads = this.search(query);
         const count = threads.length;
         this.log(`Found ${count} threads`);
@@ -88,9 +78,6 @@ class TakoApp {
             this.log(`Processing thread ${i + 1}/${count}: ${thread.getSubject()}`);
             const messages = thread.getMessages();
             for (const message of messages) {
-                if (message.getId() === lastMessageId) {
-                    continue;
-                }
                 for (const filter of gmailFilters) {
                     if (filter.rule(message)) {
                         this.log(`Running action for filter: ${filter.name}`);
@@ -100,7 +87,12 @@ class TakoApp {
                         }
                     }
                 }
-                this.setLastMessage(message);
+            }
+            // Capped at now in case a sender's clock runs fast, since the cursor never moves backward.
+            const threadTime = Math.min(thread.getLastMessageTime(), Math.floor(Date.now() / 1000));
+            if (threadTime > cursor) {
+                cursor = threadTime;
+                this.setLastMessageTime(cursor);
             }
         }
         this.log('Done!');

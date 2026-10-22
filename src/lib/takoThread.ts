@@ -49,6 +49,10 @@ class TakoThread {
         return this.thread.getFirstMessageSubject();
     }
 
+    getLastMessageTime(): number {
+        return Math.floor(this.thread.getLastMessageDate().getTime() / 1000);
+    }
+
     getMessages(): TakoMessage[] {
         return this.thread.getMessages().map(message => new TakoMessage(this, message));
     }

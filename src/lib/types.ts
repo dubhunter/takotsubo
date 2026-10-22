@@ -13,7 +13,6 @@ enum LabelName {
 }
 
 enum UserProp {
-    LastMessageId = 'LAST_MESSAGE_ID',
     LastMessageTimestamp = 'LAST_MESSAGE_TIMESTAMP',
 }
 
