@@ -22,7 +22,11 @@ There is no test runner. GAS cannot be run locally, so type-check with `npm run 
 
 - **No module system.** `tsconfig` has `"module": "none"`. There is no `import` or `export`. Every file shares one global scope. Do not add imports or exports.
 - **Load order and classes.** Files evaluate in sequence at load time (clasp pushes alphabetically unless `filePushOrder` is set; this was not verified). Function declarations are usable early, but `class` and `const` are not. Never construct a class or call another file's code at the top level of a file. Build objects inside the entry functions (`run`, `debug`, ...).
-- **Eager service calls cost real time.** Every GAS service call (`getPlainBody`, `getLabels`, `getThread`, `getUserLabels`) is slow. Whether `getId()` is one is unmeasured. Do not make them in constructors that run for every item in a large list.
+- **Eager service calls cost real time.** Do not make them in constructors that run for every item in a large list. Measured 2026-10-22 (50 messages, from the script editor):
+  - `getId`, `getFrom`, `getCc`, `getSubject`: about 1 ms per call, first or repeat. Loaded with the message; not service calls.
+  - `getPlainBody`: about 60 ms on the first call per message, about 2 ms on repeats. GAS caches it on the `GmailMessage` object.
+  - `search` of 20 threads plus `getMessages` took several seconds (not timed precisely).
+  - `getLabels`, `getThread`, `getUserLabels`, label add and remove: unmeasured.
 - **Target es2021** with `useDefineForClassFields`, required until GAS supports private class fields. Use the TypeScript `private`/`protected` keyword, never `#field`.
 - **`strict` is off.** A bare field declaration (`protected x: Foo;`) compiles but is `undefined` at runtime until assigned. Initialize fields where declared or in the constructor.
 - **Time limit.** One execution is killed at about 6 minutes. Daily trigger runtime is limited (90 min consumer, 6 hr Workspace). PropertiesService allows 50,000 reads and writes per day on consumer accounts (500,000 on Workspace), 9 KB per value.
@@ -61,7 +65,7 @@ The wrapper split (TakoApp / TakoThread / TakoMessage) came from the owner's PR 
 - **Memoize reads, write through mutations.** The per-thread label Set must be updated by every add and remove, so guards see labels added earlier in the same replay. All label changes go through `TakoThread`. Add and remove skip the API call when the label is already in the right state. Caches live for one run only.
 - **No bulk `getMessagesForThreads`.** Rejected as complexity for little gain. Use `thread.getMessages()` per thread.
 - **Search paging.** One simple loop: call `search(query, start, PAGE_SIZE)`, append, stop on a partial page. Page size: try 500 and log the first page's length on a large result. If it comes back short of 500 while more exist, the cap is lower, so fall back to exit-on-empty-page (one extra call, cannot truncate). Then **reverse** the list for oldest-first. Do not sort.
-- **Dedupe is optional.** A boundary thread can repeat if mail arrives mid-paging. If deduping, use a `Set<string>` of thread ids alongside the array (a Set of thread objects does not dedupe). Whether `getId()` is a service call is unknown; measure 100 calls first. Replaying a thread twice is harmless (idempotent), so skipping dedupe is acceptable.
+- **Dedupe is optional.** A boundary thread can repeat if mail arrives mid-paging. If deduping, use a `Set<string>` of thread ids alongside the array (a Set of thread objects does not dedupe). `getId()` is not a service call (measured), so this is cheap. Replaying a thread twice is harmless (idempotent), so skipping dedupe is acceptable.
 - **Cursor lives in PropertiesService, not CacheService** (cache entries expire and can be evicted). Read the cursor once at the start of the run, keep it in a local variable, write once per fully processed thread. Never move the cursor backward: `cursor = max(cursor, thread.getLastMessageDate())`. Drop the `lastMessageId` skip; it omits one message from a replay and does not fit the thread model. GH keeps the existing `LAST_MESSAGE_*` keys (no migration).
 - **Run lock.** `LockService.getScriptLock()` with `tryLock(0)`; skip the tick if a run is in progress. Wrap both `run` and `debug` (debug resets the cursor):
   ```ts
@@ -77,15 +81,11 @@ The wrapper split (TakoApp / TakoThread / TakoMessage) came from the owner's PR 
 
 ## Remaining work, in order
 
-1. **Fix the review findings on PR #1:**
-   - `const app = new TakoApp();` at the top of `index.ts` runs at load time. Construct inside the entry functions instead (a class is not hoisted, so load order can throw a ReferenceError).
-   - `TakoThread`'s constructor calls `getLabels()` eagerly and `search()` wraps every result. Load the label Set lazily, or wrap each thread when reached.
-   - `ensureLabels` regressed to a case-sensitive label comparison. The old code lowercased both sides; restore that so a label differing only in case does not trigger a duplicate create.
-   - `search()` and `processNewMessages` both log "Searching: ..." (double log). `protected` could be `private`.
-2. **Move the search into `filters.ts`** (the Trigger wrapper above).
-3. **Cursor and loop fixes:** page the search, reverse to oldest-first, replay each thread chronologically, advance the cursor per thread, deadline, run lock, remove the `lastMessageId` skip.
-4. **Memoize message fields:** cache `cc`, `subject`, `body` (and `from`) per message on first use. A message can still trigger up to 10 `getPlainBody()` calls.
-5. **Later:** time-based triggers (for example "trash Marketing after 7 days"), and per-install rule sets.
+1. **Move the search into `filters.ts`** (the Trigger wrapper above).
+2. **Cursor and loop fixes:** page the search, reverse to oldest-first, replay each thread chronologically, advance the cursor per thread, deadline, run lock, remove the `lastMessageId` skip.
+3. **Later:** time-based triggers (for example "trash Marketing after 7 days"), and per-install rule sets.
+
+Done: the PR #1 review findings (app built inside entry points, threads wrapped when reached, case-insensitive label names, `private` members). Dropped: memoizing message fields, since GAS already caches them (see the measurements above).
 
 Keep these as separate small commits.
 

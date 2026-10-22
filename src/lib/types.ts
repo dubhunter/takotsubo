@@ -32,5 +32,11 @@ type UserConfig = {
 }
 
 type MoveActionOptions = {
-    ifNotHasLabelsAny: LabelName[];
+    ifNotHasLabelsAny?: LabelName[];
+}
+
+enum ThreadLocation {
+    Inbox = 'inbox',
+    Archive = 'archive',
+    Trash = 'trash',
 }

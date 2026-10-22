@@ -1,57 +1,44 @@
 class TakoMessage {
-    constructor(private message: GoogleAppsScript.Gmail.GmailMessage) {}
+    constructor(readonly thread: TakoThread, readonly message: GoogleAppsScript.Gmail.GmailMessage) {}
 
     getId(): string {
         return this.message.getId();
     }
 
     getTimestamp(): number {
-        return this.message.getDate().getTime() / 1000;
+        return Math.floor(this.message.getDate().getTime() / 1000);
     }
 
     hasLabel(labelName: LabelName): boolean {
-        return this.hasLabelsAny([labelName]);
+        return this.thread.hasLabel(labelName);
     }
 
     hasLabelsAny(labelNames: LabelName[]): boolean {
-        for (const label of this.message.getThread().getLabels()) {
-            if (labelNames.includes(label.getName() as LabelName)) {
-                return true;
-            }
-        }
-        return false;
+        return this.thread.hasLabelsAny(labelNames);
     }
 
-    addLabel(labelName: string): TakoMessage {
-        const label = GmailApp.getUserLabelByName(labelName);
-        this.message.getThread().addLabel(label);
+    addLabel(labelName: LabelName): TakoMessage {
+        this.thread.addLabel(labelName);
         return this;
     }
 
-    removeLabel(labelName: string): TakoMessage {
-        const label = GmailApp.getUserLabelByName(labelName);
-        this.message.getThread().removeLabel(label);
+    removeLabel(labelName: LabelName): TakoMessage {
+        this.thread.removeLabel(labelName);
         return this;
     }
 
-    private runIfNotHasLabelsAny(labels: LabelName[], action: () => void): void {
-        if (labels.length === 0 || !this.hasLabelsAny(labels)) {
-            action();
-        }
-    }
-
-    moveToArchive(options: MoveActionOptions = {ifNotHasLabelsAny: []}): TakoMessage {
-        this.runIfNotHasLabelsAny(options.ifNotHasLabelsAny, () => this.message.getThread().moveToArchive());
+    moveToArchive(options: MoveActionOptions = {}): TakoMessage {
+        this.thread.moveToArchive(options);
         return this;
     }
 
-    moveToInbox(options: MoveActionOptions = {ifNotHasLabelsAny: []}): TakoMessage {
-        this.runIfNotHasLabelsAny(options.ifNotHasLabelsAny, () => this.message.getThread().moveToInbox());
+    moveToInbox(options: MoveActionOptions = {}): TakoMessage {
+        this.thread.moveToInbox(options);
         return this;
     }
 
-    moveToTrash(options: MoveActionOptions = {ifNotHasLabelsAny: []}): TakoMessage {
-        this.runIfNotHasLabelsAny(options.ifNotHasLabelsAny, () => this.message.getThread().moveToTrash());
+    moveToTrash(options: MoveActionOptions = {}): TakoMessage {
+        this.thread.moveToTrash(options);
         return this;
     }
 
