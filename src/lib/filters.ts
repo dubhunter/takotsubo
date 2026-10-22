@@ -1,7 +1,7 @@
 const gmailFilters: GmailFilter[] = [
     {
         name: 'Approved',
-        rule: t => t.bodyContains(new RegExp('@[A-Za-z0-9-]+ approved this pull request\\.')),
+        rule: t => t.bodyContains(new RegExp('@[A-Za-z0-9-]+(\\[bot\\])? approved this pull request\\.')),
         action: t => t.addLabel(LabelName.Approved).moveToArchive({ifNotHasLabelsAny: [LabelName.Author, LabelName.DirectReview]}),
         lastFilter: false,
     },
@@ -33,7 +33,7 @@ const gmailFilters: GmailFilter[] = [
     },
     {
         name: 'Direct Review',
-        rule: t => t.bodyContains(new RegExp('@[A-Za-z0-9-]+ requested your review on:')),
+        rule: t => t.bodyContains(new RegExp('@[A-Za-z0-9-]+(\\[bot\\])? requested your review on:')),
         action: t => t.addLabel(LabelName.DirectReview).moveToInbox({ifNotHasLabelsAny: [LabelName.Muted]}),
         lastFilter: false,
     },
@@ -70,7 +70,7 @@ const gmailFilters: GmailFilter[] = [
     },
     {
         name: 'Team Review',
-        rule: t => t.bodyContains(new RegExp(`@[A-Za-z0-9-]+ requested review from ${config.usernameTeam} on:`)),
+        rule: t => t.bodyContains(new RegExp(`@[A-Za-z0-9-]+(\\[bot\\])? requested review from ${config.usernameTeam} on:`)),
         action: t => t.addLabel(LabelName.TeamReview).moveToInbox({ifNotHasLabelsAny: [LabelName.Muted]}),
         lastFilter: false,
     },
