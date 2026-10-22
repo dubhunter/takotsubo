@@ -48,7 +48,7 @@ class TakoApp {
         return this.labels.get(labelName);
     }
 
-    ensureLabels(): void {
+    ensureLabels(): TakoApp {
         this.log('Ensure labels...');
         for (const labelName of Object.values(LabelName)) {
             if (!this.labels.has(labelName)) {
@@ -56,20 +56,23 @@ class TakoApp {
                 this.createLabel(labelName);
             }
         }
+        return this;
     }
 
-    listFilters(): void {
+    listFilters(): TakoApp {
         for (const filter of gmailFilters) {
             this.log(`Filter: ${filter.name}`);
         }
+        return this;
     }
 
-    resetProperties(): void {
+    resetProperties(): TakoApp {
         this.userProperties.deleteAllProperties();
         this.log('User properties deleted.');
+        return this;
     }
 
-    processNewMessages(): void {
+    processNewMessages(): TakoApp {
         this.ensureLabels();
         const lastMessageId = this.getLastMessageId();
         const query = `label:GH after:${this.getLastMessageTime() + 1}`;
@@ -96,5 +99,6 @@ class TakoApp {
             }
         }
         this.log('Done!');
+        return this;
     }
 }
