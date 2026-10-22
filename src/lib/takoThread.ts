@@ -4,7 +4,7 @@ class TakoThread {
         this.labelNames = new Set(this.thread.getLabels().map(label => labelKey(label.getName())));
     }
 
-    private runIfNotHasLabelsAny(labels: LabelName[], action: () => void): void {
+    private runIfNotHasLabelsAny(labels: LabelName[] = [], action: () => void): void {
         if (labels.length === 0 || !this.hasLabelsAny(labels)) {
             action();
         }
@@ -42,17 +42,17 @@ class TakoThread {
         return this;
     }
 
-    moveToArchive(options: MoveActionOptions = {ifNotHasLabelsAny: []}): TakoThread {
+    moveToArchive(options: MoveActionOptions = {}): TakoThread {
         this.runIfNotHasLabelsAny(options.ifNotHasLabelsAny, () => this.thread.moveToArchive());
         return this;
     }
 
-    moveToInbox(options: MoveActionOptions = {ifNotHasLabelsAny: []}): TakoThread {
+    moveToInbox(options: MoveActionOptions = {}): TakoThread {
         this.runIfNotHasLabelsAny(options.ifNotHasLabelsAny, () => this.thread.moveToInbox());
         return this;
     }
 
-    moveToTrash(options: MoveActionOptions = {ifNotHasLabelsAny: []}): TakoThread {
+    moveToTrash(options: MoveActionOptions = {}): TakoThread {
         this.runIfNotHasLabelsAny(options.ifNotHasLabelsAny, () => this.thread.moveToTrash());
         return this;
     }

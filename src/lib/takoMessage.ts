@@ -27,17 +27,17 @@ class TakoMessage {
         return this;
     }
 
-    moveToArchive(options: MoveActionOptions = {ifNotHasLabelsAny: []}): TakoMessage {
+    moveToArchive(options: MoveActionOptions = {}): TakoMessage {
         this.thread.moveToArchive(options);
         return this;
     }
 
-    moveToInbox(options: MoveActionOptions = {ifNotHasLabelsAny: []}): TakoMessage {
+    moveToInbox(options: MoveActionOptions = {}): TakoMessage {
         this.thread.moveToInbox(options);
         return this;
     }
 
-    moveToTrash(options: MoveActionOptions = {ifNotHasLabelsAny: []}): TakoMessage {
+    moveToTrash(options: MoveActionOptions = {}): TakoMessage {
         this.thread.moveToTrash(options);
         return this;
     }

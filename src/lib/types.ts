@@ -32,5 +32,5 @@ type UserConfig = {
 }
 
 type MoveActionOptions = {
-    ifNotHasLabelsAny: LabelName[];
+    ifNotHasLabelsAny?: LabelName[];
 }
