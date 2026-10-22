@@ -6,7 +6,7 @@ class TakoMessage {
     }
 
     getTimestamp(): number {
-        return this.message.getDate().getTime() / 1000;
+        return Math.floor(this.message.getDate().getTime() / 1000);
     }
 
     hasLabel(labelName: LabelName): boolean {
