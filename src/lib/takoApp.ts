@@ -36,9 +36,9 @@ class TakoApp {
         this.labels.set(labelName, GmailApp.createLabel(labelName));
     }
 
-    protected search(query: string): TakoThread[] {
+    protected search(query: string): GoogleAppsScript.Gmail.GmailThread[] {
         this.log(`Searching: ${query}`);
-        return GmailApp.search(query).map(thread => new TakoThread(this, thread));
+        return GmailApp.search(query);
     }
 
     getLabelByName(labelName: LabelName): GoogleAppsScript.Gmail.GmailLabel {
@@ -79,7 +79,8 @@ class TakoApp {
         const threads = this.search(query);
         const count = threads.length;
         this.log(`Found ${count} threads`);
-        for (const [i, thread] of threads.entries()) {
+        for (const [i, gmailThread] of threads.entries()) {
+            const thread = new TakoThread(this, gmailThread);
             this.log(`Processing thread ${i + 1}/${count}: ${thread.getSubject()}`);
             const messages = thread.getMessages();
             for (const message of messages) {
