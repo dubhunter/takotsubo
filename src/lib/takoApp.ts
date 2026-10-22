@@ -9,9 +9,11 @@ class TakoApp {
     private userProperties: GoogleAppsScript.Properties.Properties;
     private labels = new Map<string, GoogleAppsScript.Gmail.GmailLabel>();
     private deadline = Date.now() + RUN_DEADLINE_MS;
+    private timeZone: string;
 
     constructor() {
         this.userProperties = PropertiesService.getUserProperties();
+        this.timeZone = Session.getScriptTimeZone();
         for (const label of GmailApp.getUserLabels()) {
             this.labels.set(labelKey(label.getName()), label);
         }
@@ -117,18 +119,21 @@ class TakoApp {
                 this.log(`Skipping thread ${i + 1}/${count}, no new messages: ${thread.getSubject()}`);
                 continue;
             }
-            this.log(`Processing thread ${i + 1}/${count}: ${thread.getSubject()}`);
-            for (const message of messages) {
+            this.log(`Thread ${i + 1}/${count}: ${thread.getSubject()} (${messages.length} messages)`);
+            for (const [n, message] of messages.entries()) {
                 for (const filter of gmailFilters) {
                     if (filter.rule(message)) {
-                        this.log(`Running action for filter: ${filter.name}`);
                         filter.action(message);
+                        const date = Utilities.formatDate(message.getDate(), this.timeZone, 'MMM d HH:mm');
+                        const effects = thread.takeEffects().join(', ') || 'no actions';
+                        this.log(`  #${n + 1} ${date} ${filter.name}: ${effects}`);
                         if (filter.lastFilter) {
                             break
                         }
                     }
                 }
             }
+            this.log(`  net: ${thread.getNetChanges().join(', ') || 'no change'}`);
             cursor = this.advanceCursor(newest, cursor, recentMessageIds);
         }
         this.log('Done!');
