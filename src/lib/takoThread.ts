@@ -1,5 +1,6 @@
 class TakoThread {
     private labelNames: Set<string>;
+    private location: ThreadLocation | null = null;
     constructor(readonly app: TakoApp, readonly thread: GoogleAppsScript.Gmail.GmailThread) {
         this.labelNames = new Set(this.thread.getLabels().map(label => labelKey(label.getName())));
     }
@@ -8,6 +9,40 @@ class TakoThread {
         if (labels.length === 0 || !this.hasLabelsAny(labels)) {
             action();
         }
+    }
+
+    private getLocation(): ThreadLocation {
+        if (this.location === null) {
+            if (this.thread.isInTrash()) {
+                this.location = ThreadLocation.Trash;
+            } else if (this.thread.isInInbox()) {
+                this.location = ThreadLocation.Inbox;
+            } else {
+                this.location = ThreadLocation.Archive;
+            }
+        }
+        return this.location;
+    }
+
+    private moveTo(location: ThreadLocation, options: MoveActionOptions): TakoThread {
+        this.runIfNotHasLabelsAny(options.ifNotHasLabelsAny, () => {
+            if (this.getLocation() === location) {
+                return;
+            }
+            switch (location) {
+                case ThreadLocation.Inbox:
+                    this.thread.moveToInbox();
+                    break;
+                case ThreadLocation.Archive:
+                    this.thread.moveToArchive();
+                    break;
+                case ThreadLocation.Trash:
+                    this.thread.moveToTrash();
+                    break;
+            }
+            this.location = location;
+        });
+        return this;
     }
 
     getSubject(): string {
@@ -43,17 +78,14 @@ class TakoThread {
     }
 
     moveToArchive(options: MoveActionOptions = {}): TakoThread {
-        this.runIfNotHasLabelsAny(options.ifNotHasLabelsAny, () => this.thread.moveToArchive());
-        return this;
+        return this.moveTo(ThreadLocation.Archive, options);
     }
 
     moveToInbox(options: MoveActionOptions = {}): TakoThread {
-        this.runIfNotHasLabelsAny(options.ifNotHasLabelsAny, () => this.thread.moveToInbox());
-        return this;
+        return this.moveTo(ThreadLocation.Inbox, options);
     }
 
     moveToTrash(options: MoveActionOptions = {}): TakoThread {
-        this.runIfNotHasLabelsAny(options.ifNotHasLabelsAny, () => this.thread.moveToTrash());
-        return this;
+        return this.moveTo(ThreadLocation.Trash, options);
     }
 }
