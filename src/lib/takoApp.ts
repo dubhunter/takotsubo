@@ -5,7 +5,7 @@ class TakoApp {
     constructor() {
         this.userProperties = PropertiesService.getUserProperties();
         for (const label of GmailApp.getUserLabels()) {
-            this.labels.set(label.getName(), label);
+            this.labels.set(labelKey(label.getName()), label);
         }
     }
 
@@ -33,7 +33,7 @@ class TakoApp {
     }
 
     protected createLabel(labelName: string): void {
-        this.labels.set(labelName, GmailApp.createLabel(labelName));
+        this.labels.set(labelKey(labelName), GmailApp.createLabel(labelName));
     }
 
     protected search(query: string): GoogleAppsScript.Gmail.GmailThread[] {
@@ -42,16 +42,16 @@ class TakoApp {
     }
 
     getLabelByName(labelName: LabelName): GoogleAppsScript.Gmail.GmailLabel {
-        if (!this.labels.has(labelName)) {
+        if (!this.labels.has(labelKey(labelName))) {
             this.createLabel(labelName);
         }
-        return this.labels.get(labelName);
+        return this.labels.get(labelKey(labelName));
     }
 
     ensureLabels(): TakoApp {
         this.log('Ensure labels...');
         for (const labelName of Object.values(LabelName)) {
-            if (!this.labels.has(labelName)) {
+            if (!this.labels.has(labelKey(labelName))) {
                 this.log(`Creating label: ${labelName}`);
                 this.createLabel(labelName);
             }

@@ -1,7 +1,7 @@
 class TakoThread {
     protected labelNames: Set<string>;
     constructor(readonly app: TakoApp, readonly thread: GoogleAppsScript.Gmail.GmailThread) {
-        this.labelNames = new Set(this.thread.getLabels().map(label => label.getName()));
+        this.labelNames = new Set(this.thread.getLabels().map(label => labelKey(label.getName())));
     }
 
     protected runIfNotHasLabelsAny(labels: LabelName[], action: () => void): void {
@@ -19,7 +19,7 @@ class TakoThread {
     }
 
     hasLabel(labelName: LabelName): boolean {
-        return this.labelNames.has(labelName);
+        return this.labelNames.has(labelKey(labelName));
     }
 
     hasLabelsAny(labelNames: LabelName[]): boolean {
@@ -27,17 +27,17 @@ class TakoThread {
     }
 
     addLabel(labelName: LabelName): TakoThread {
-        if (!this.labelNames.has(labelName)) {
+        if (!this.hasLabel(labelName)) {
             this.thread.addLabel(this.app.getLabelByName(labelName));
-            this.labelNames.add(labelName);
+            this.labelNames.add(labelKey(labelName));
         }
         return this;
     }
 
     removeLabel(labelName: LabelName): TakoThread {
-        if (this.labelNames.has(labelName)) {
+        if (this.hasLabel(labelName)) {
             this.thread.removeLabel(this.app.getLabelByName(labelName));
-            this.labelNames.delete(labelName);
+            this.labelNames.delete(labelKey(labelName));
         }
         return this;
     }

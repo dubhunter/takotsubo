@@ -4,3 +4,8 @@ function stringContains(str: string, search: RegExp | string): boolean {
     }
     return str.includes(search);
 }
+
+// Gmail label names are case-insensitive, so compare them by this key.
+function labelKey(labelName: string): string {
+    return labelName.toLowerCase();
+}
