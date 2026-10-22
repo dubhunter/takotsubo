@@ -31,7 +31,7 @@ class TakoApp {
         this.labels.set(labelKey(labelName), GmailApp.createLabel(labelName));
     }
 
-    // Oldest first: search returns threads newest first by last message.
+    // Search returns newest first.
     private search(query: string): GoogleAppsScript.Gmail.GmailThread[] {
         this.log(`Searching: ${query}`);
         return fetchAllPages((start, max) => GmailApp.search(query, start, max), SEARCH_PAGE_SIZE).reverse();
