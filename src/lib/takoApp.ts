@@ -21,11 +21,11 @@ class TakoApp {
         console.info(message);
     }
 
-    private setLastMessageTime(time: number): void {
-        this.userProperties.setProperty(UserProp.LastMessageTimestamp, time.toString());
+    private saveCursor(cursor: number): void {
+        this.userProperties.setProperty(UserProp.LastMessageTimestamp, cursor.toString());
     }
 
-    private getLastMessageTime(): number {
+    private loadCursor(): number {
         return Math.floor(Number(this.userProperties.getProperty(UserProp.LastMessageTimestamp) || 0));
     }
 
@@ -40,18 +40,18 @@ class TakoApp {
             }
         }
         // Ids first: if the run dies between the writes, the thread is found again and skipped.
-        this.setRecentMessageIds(recentMessageIds);
+        this.saveRecentMessageIds(recentMessageIds);
         if (newCursor > cursor) {
-            this.setLastMessageTime(newCursor);
+            this.saveCursor(newCursor);
         }
         return newCursor;
     }
 
-    private getRecentMessageIds(): Map<string, number> {
+    private loadRecentMessageIds(): Map<string, number> {
         return new Map(Object.entries(JSON.parse(this.userProperties.getProperty(UserProp.RecentMessageIds) || '{}')));
     }
 
-    private setRecentMessageIds(ids: Map<string, number>): void {
+    private saveRecentMessageIds(ids: Map<string, number>): void {
         this.userProperties.setProperty(UserProp.RecentMessageIds, JSON.stringify(Object.fromEntries(ids)));
     }
 
@@ -97,8 +97,8 @@ class TakoApp {
 
     processNewMessages(): TakoApp {
         this.ensureLabels();
-        let cursor = this.getLastMessageTime();
-        const recentMessageIds = this.getRecentMessageIds();
+        let cursor = this.loadCursor();
+        const recentMessageIds = this.loadRecentMessageIds();
         // after: includes the cursor's own second, so nothing in it is missed; threads already processed are skipped below.
         const query = `label:GH after:${cursor}`;
         const threads = this.search(query);
