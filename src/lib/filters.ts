@@ -17,7 +17,7 @@ const gmailFilters: GmailFilter[] = [
         rule: t => t.ccContains(config.emailCI),
         action: t => {
             t.addLabel(LabelName.CI);
-            if (t.subjectContains("Run cancelled:")) {
+            if (t.subjectContains(new RegExp('run cancelled:', 'i'))) {
                 t.moveToTrash();
             } else {
                 t.moveToInbox();
