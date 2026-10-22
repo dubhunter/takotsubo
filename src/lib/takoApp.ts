@@ -29,8 +29,7 @@ class TakoApp {
         return Math.floor(Number(this.userProperties.getProperty(UserProp.LastMessageTimestamp) || 0));
     }
 
-    // Returns the new cursor.
-    private setLastMessage(message: TakoMessage, cursor: number, recentMessageIds: Map<string, number>): number {
+    private advanceCursor(message: TakoMessage, cursor: number, recentMessageIds: Map<string, number>): number {
         // Capped at now in case a sender's clock runs fast, since the cursor never moves backward.
         const messageTime = Math.min(message.getTimestamp(), Math.floor(Date.now() / 1000));
         const newCursor = Math.max(cursor, messageTime);
@@ -130,7 +129,7 @@ class TakoApp {
                     }
                 }
             }
-            cursor = this.setLastMessage(newest, cursor, recentMessageIds);
+            cursor = this.advanceCursor(newest, cursor, recentMessageIds);
         }
         this.log('Done!');
         return this;
