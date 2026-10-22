@@ -57,7 +57,7 @@ const gmailFilters: GmailFilter[] = [
     },
     {
         name: 'UnQueued',
-        rule: t => t.bodyContains(new RegExp('#[0-9]+ was automatically removed from the \\[merge queue]')),
+        rule: t => t.bodyContains(new RegExp('#[0-9]+ was (automatically|manually) removed from the \\[?merge queue')),
         action: t => t.removeLabel(LabelName.Queued),
         lastFilter: false,
     },
