@@ -9,3 +9,15 @@ function stringContains(str: string, search: RegExp | string): boolean {
 function labelKey(labelName: string): string {
     return labelName.toLowerCase();
 }
+
+// Fetches pages until one comes back empty, so a short page can never truncate the results.
+function fetchAllPages<T>(fetchPage: (start: number, max: number) => T[], pageSize: number): T[] {
+    const items: T[] = [];
+    for (;;) {
+        const page = fetchPage(items.length, pageSize);
+        if (page.length === 0) {
+            return items;
+        }
+        items.push(...page);
+    }
+}

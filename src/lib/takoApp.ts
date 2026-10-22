@@ -1,3 +1,6 @@
+// GmailApp.search throws above 500.
+const SEARCH_PAGE_SIZE = 500;
+
 class TakoApp {
     private userProperties: GoogleAppsScript.Properties.Properties;
     private labels = new Map<string, GoogleAppsScript.Gmail.GmailLabel>();
@@ -36,9 +39,10 @@ class TakoApp {
         this.labels.set(labelKey(labelName), GmailApp.createLabel(labelName));
     }
 
+    // Oldest first: search returns threads newest first by last message.
     private search(query: string): GoogleAppsScript.Gmail.GmailThread[] {
         this.log(`Searching: ${query}`);
-        return GmailApp.search(query);
+        return fetchAllPages((start, max) => GmailApp.search(query, start, max), SEARCH_PAGE_SIZE).reverse();
     }
 
     getLabelByName(labelName: LabelName): GoogleAppsScript.Gmail.GmailLabel {
