@@ -1,9 +1,12 @@
 // GmailApp.search throws above 500.
 const SEARCH_PAGE_SIZE = 500;
+// GAS kills a run at about 6 minutes; stop between threads before that.
+const RUN_DEADLINE_MS = 5 * 60 * 1000;
 
 class TakoApp {
     private userProperties: GoogleAppsScript.Properties.Properties;
     private labels = new Map<string, GoogleAppsScript.Gmail.GmailLabel>();
+    private deadline = Date.now() + RUN_DEADLINE_MS;
 
     constructor() {
         this.userProperties = PropertiesService.getUserProperties();
@@ -74,6 +77,10 @@ class TakoApp {
         const count = threads.length;
         this.log(`Found ${count} threads`);
         for (const [i, gmailThread] of threads.entries()) {
+            if (Date.now() > this.deadline) {
+                this.log(`Deadline reached after ${i}/${count} threads, resuming next run.`);
+                break;
+            }
             const thread = new TakoThread(this, gmailThread);
             this.log(`Processing thread ${i + 1}/${count}: ${thread.getSubject()}`);
             const messages = thread.getMessages();
