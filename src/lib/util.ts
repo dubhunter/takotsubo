@@ -13,7 +13,7 @@ function labelKey(labelName: string): string {
 // Fetches pages until one comes back empty, so a short page can never truncate the results.
 function fetchAllPages<T>(fetchPage: (start: number, max: number) => T[], pageSize: number): T[] {
     const items: T[] = [];
-    for (;;) {
+    while (true) {
         const page = fetchPage(items.length, pageSize);
         if (page.length === 0) {
             return items;
