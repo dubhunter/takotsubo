@@ -35,3 +35,12 @@ function withScriptLock(work: () => void): void {
         lock.releaseLock();
     }
 }
+
+function countUp(counts: Map<string, number>, key: string): void {
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+}
+
+// "a 3, b 1", largest first.
+function formatCounts(counts: Map<string, number>): string {
+    return [...counts].sort((a, b) => b[1] - a[1]).map(([key, count]) => `${key} ${count}`).join(', ') || 'none';
+}

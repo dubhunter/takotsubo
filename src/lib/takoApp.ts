@@ -106,6 +106,9 @@ class TakoApp {
         const threads = this.search(query);
         const count = threads.length;
         this.log(`Found ${count} threads`);
+        const ruleMatches = new Map<string, number>();
+        const netChanges = new Map<string, number>();
+        let processed = 0;
         for (const [i, gmailThread] of threads.entries()) {
             if (Date.now() > this.deadline) {
                 this.log(`Deadline reached after ${i}/${count} threads, resuming next run.`);
@@ -124,6 +127,7 @@ class TakoApp {
                 for (const filter of gmailFilters) {
                     if (filter.rule(message)) {
                         filter.action(message);
+                        countUp(ruleMatches, filter.name);
                         const date = Utilities.formatDate(message.getDate(), this.timeZone, 'MMM d HH:mm');
                         const effects = thread.takeEffects().join(', ') || 'no actions';
                         this.log(`  #${n + 1} ${date} ${filter.name}: ${effects}`);
@@ -133,10 +137,15 @@ class TakoApp {
                     }
                 }
             }
-            this.log(`  net: ${thread.getNetChanges().join(', ') || 'no change'}`);
+            const changes = thread.getNetChanges();
+            this.log(`  net: ${changes.join(', ') || 'no change'}`);
+            changes.forEach(change => countUp(netChanges, change));
+            processed++;
             cursor = this.advanceCursor(newest, cursor, recentMessageIds);
         }
-        this.log('Done!');
+        this.log(`Done: processed ${processed}/${count} threads.`);
+        this.log(`Rule matches (messages): ${formatCounts(ruleMatches)}`);
+        this.log(`Net changes (threads): ${formatCounts(netChanges)}`);
         return this;
     }
 }
