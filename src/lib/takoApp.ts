@@ -73,7 +73,6 @@ class TakoApp {
         this.ensureLabels();
         const lastMessageId = this.getLastMessageId();
         const query = `label:GH after:${this.getLastMessageTime() + 1}`;
-        this.log(`Searching: ${query}`);
         const threads = this.search(query);
         const count = threads.length;
         this.log(`Found ${count} threads`);
