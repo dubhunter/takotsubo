@@ -14,6 +14,7 @@ enum LabelName {
 
 enum UserProp {
     LastMessageTimestamp = 'LAST_MESSAGE_TIMESTAMP',
+    RecentMessageIds = 'RECENT_MESSAGE_IDS',
 }
 
 type GmailFilter = {

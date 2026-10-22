@@ -2,6 +2,8 @@
 const SEARCH_PAGE_SIZE = 500;
 // GAS kills a run at about 6 minutes; stop between threads before that.
 const RUN_DEADLINE_MS = 5 * 60 * 1000;
+// How long to remember processed messages. Search can find a thread again a few seconds after the cursor passes it.
+const RECENT_MESSAGE_WINDOW_S = 5 * 60;
 
 class TakoApp {
     private userProperties: GoogleAppsScript.Properties.Properties;
@@ -25,6 +27,14 @@ class TakoApp {
 
     private getLastMessageTime(): number {
         return Math.floor(Number(this.userProperties.getProperty(UserProp.LastMessageTimestamp) || 0));
+    }
+
+    private getRecentMessageIds(): Map<string, number> {
+        return new Map(Object.entries(JSON.parse(this.userProperties.getProperty(UserProp.RecentMessageIds) || '{}')));
+    }
+
+    private setRecentMessageIds(ids: Map<string, number>): void {
+        this.userProperties.setProperty(UserProp.RecentMessageIds, JSON.stringify(Object.fromEntries(ids)));
     }
 
     private createLabel(labelName: string): void {
@@ -71,7 +81,8 @@ class TakoApp {
     processNewMessages(): TakoApp {
         this.ensureLabels();
         let cursor = this.getLastMessageTime();
-        // after: includes the cursor's own second, so a thread ending in it is replayed rather than missed.
+        const recentIds = this.getRecentMessageIds();
+        // after: includes the cursor's own second, so nothing in it is missed; threads already processed are skipped below.
         const query = `label:GH after:${cursor}`;
         const threads = this.search(query);
         const count = threads.length;
@@ -82,8 +93,14 @@ class TakoApp {
                 break;
             }
             const thread = new TakoThread(this, gmailThread);
-            this.log(`Processing thread ${i + 1}/${count}: ${thread.getSubject()}`);
             const messages = thread.getMessages();
+            const newest = messages[messages.length - 1];
+            // Replay only on a new message, so a thread archived by hand stays archived.
+            if (recentIds.has(newest.getId())) {
+                this.log(`Skipping thread ${i + 1}/${count}, no new messages: ${thread.getSubject()}`);
+                continue;
+            }
+            this.log(`Processing thread ${i + 1}/${count}: ${thread.getSubject()}`);
             for (const message of messages) {
                 for (const filter of gmailFilters) {
                     if (filter.rule(message)) {
@@ -96,9 +113,18 @@ class TakoApp {
                 }
             }
             // Capped at now in case a sender's clock runs fast, since the cursor never moves backward.
-            const threadTime = Math.min(thread.getLastMessageTime(), Math.floor(Date.now() / 1000));
-            if (threadTime > cursor) {
-                cursor = threadTime;
+            const newestTime = Math.min(newest.getTimestamp(), Math.floor(Date.now() / 1000));
+            const newCursor = Math.max(cursor, newestTime);
+            recentIds.set(newest.getId(), newestTime);
+            for (const [id, time] of recentIds) {
+                if (time < newCursor - RECENT_MESSAGE_WINDOW_S) {
+                    recentIds.delete(id);
+                }
+            }
+            // Ids first: if the run dies between the writes, the thread is found again and skipped.
+            this.setRecentMessageIds(recentIds);
+            if (newCursor > cursor) {
+                cursor = newCursor;
                 this.setLastMessageTime(cursor);
             }
         }
