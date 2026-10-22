@@ -51,7 +51,7 @@ const gmailFilters: GmailFilter[] = [
     },
     {
         name: 'Queued',
-        rule: t => t.bodyContains(new RegExp('#[0-9]+ was added to the \\[merge queue]')),
+        rule: t => t.bodyContains(new RegExp('#[0-9]+ was added to the \\[?merge queue')),
         action: t => t.addLabel(LabelName.Queued),
         lastFilter: false,
     },
