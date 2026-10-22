@@ -1,10 +1,10 @@
 class TakoThread {
-    protected labelNames: Set<string>;
+    private labelNames: Set<string>;
     constructor(readonly app: TakoApp, readonly thread: GoogleAppsScript.Gmail.GmailThread) {
         this.labelNames = new Set(this.thread.getLabels().map(label => labelKey(label.getName())));
     }
 
-    protected runIfNotHasLabelsAny(labels: LabelName[], action: () => void): void {
+    private runIfNotHasLabelsAny(labels: LabelName[], action: () => void): void {
         if (labels.length === 0 || !this.hasLabelsAny(labels)) {
             action();
         }

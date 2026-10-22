@@ -1,6 +1,6 @@
 class TakoApp {
-    protected userProperties: GoogleAppsScript.Properties.Properties;
-    protected labels = new Map<string, GoogleAppsScript.Gmail.GmailLabel>();
+    private userProperties: GoogleAppsScript.Properties.Properties;
+    private labels = new Map<string, GoogleAppsScript.Gmail.GmailLabel>();
 
     constructor() {
         this.userProperties = PropertiesService.getUserProperties();
@@ -9,11 +9,11 @@ class TakoApp {
         }
     }
 
-    protected log(message: string): void {
+    private log(message: string): void {
         console.info(message);
     }
 
-    protected setLastMessage(message: TakoMessage): void {
+    private setLastMessage(message: TakoMessage): void {
         const messageId = message.getId();
         if (messageId !== this.getLastMessageId()) {
             this.userProperties.setProperty(UserProp.LastMessageId, messageId);
@@ -24,19 +24,19 @@ class TakoApp {
         }
     }
 
-    protected getLastMessageTime(): number {
+    private getLastMessageTime(): number {
         return Number(this.userProperties.getProperty(UserProp.LastMessageTimestamp) || 0);
     }
 
-    protected getLastMessageId(): string | null {
+    private getLastMessageId(): string | null {
         return this.userProperties.getProperty(UserProp.LastMessageId);
     }
 
-    protected createLabel(labelName: string): void {
+    private createLabel(labelName: string): void {
         this.labels.set(labelKey(labelName), GmailApp.createLabel(labelName));
     }
 
-    protected search(query: string): GoogleAppsScript.Gmail.GmailThread[] {
+    private search(query: string): GoogleAppsScript.Gmail.GmailThread[] {
         this.log(`Searching: ${query}`);
         return GmailApp.search(query);
     }
