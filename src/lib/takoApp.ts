@@ -21,12 +21,20 @@ class TakoApp {
         console.info(message);
     }
 
+    private loadCursor(): number {
+        return Math.floor(Number(this.userProperties.getProperty(UserProp.LastMessageTimestamp) || 0));
+    }
+
     private saveCursor(cursor: number): void {
         this.userProperties.setProperty(UserProp.LastMessageTimestamp, cursor.toString());
     }
 
-    private loadCursor(): number {
-        return Math.floor(Number(this.userProperties.getProperty(UserProp.LastMessageTimestamp) || 0));
+    private loadRecentMessageIds(): Map<string, number> {
+        return new Map(Object.entries(JSON.parse(this.userProperties.getProperty(UserProp.RecentMessageIds) || '{}')));
+    }
+
+    private saveRecentMessageIds(ids: Map<string, number>): void {
+        this.userProperties.setProperty(UserProp.RecentMessageIds, JSON.stringify(Object.fromEntries(ids)));
     }
 
     private advanceCursor(message: TakoMessage, cursor: number, recentMessageIds: Map<string, number>): number {
@@ -47,12 +55,10 @@ class TakoApp {
         return newCursor;
     }
 
-    private loadRecentMessageIds(): Map<string, number> {
-        return new Map(Object.entries(JSON.parse(this.userProperties.getProperty(UserProp.RecentMessageIds) || '{}')));
-    }
-
-    private saveRecentMessageIds(ids: Map<string, number>): void {
-        this.userProperties.setProperty(UserProp.RecentMessageIds, JSON.stringify(Object.fromEntries(ids)));
+    resetProperties(): TakoApp {
+        this.userProperties.deleteAllProperties();
+        this.log('User properties deleted.');
+        return this;
     }
 
     private createLabel(labelName: string): void {
@@ -86,12 +92,6 @@ class TakoApp {
         for (const filter of gmailFilters) {
             this.log(`Filter: ${filter.name}`);
         }
-        return this;
-    }
-
-    resetProperties(): TakoApp {
-        this.userProperties.deleteAllProperties();
-        this.log('User properties deleted.');
         return this;
     }
 
