@@ -1,3 +1,5 @@
+const app = new TakoApp();
+
 function run() {
     app.processNewMessages();
 }
