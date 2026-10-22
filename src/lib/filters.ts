@@ -65,7 +65,7 @@ const gmailFilters: GmailFilter[] = [
         name: 'Reopened',
         rule: t => t.hasLabel(LabelName.Closed)
             && t.bodyContains(new RegExp('Reopened #[0-9]+\\.')),
-        action: t => t.removeLabel(LabelName.Closed),
+        action: t => t.removeLabel(LabelName.Closed).moveToInbox({ifNotHasLabelsAny: [LabelName.Muted]}),
         lastFilter: false,
     },
     {
