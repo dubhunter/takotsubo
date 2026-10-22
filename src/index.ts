@@ -13,6 +13,12 @@ function debug() {
     });
 }
 
+// Evaluates every rule over all GH mail and logs what would happen. Changes nothing.
+function dryRun() {
+    const app = new TakoApp(true);
+    app.processNewMessages();
+}
+
 function ensureLabels() {
     const app = new TakoApp();
     app.ensureLabels();

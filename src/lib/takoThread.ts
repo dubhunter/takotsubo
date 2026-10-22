@@ -35,16 +35,18 @@ class TakoThread {
             this.effects.push(`already in ${location}`);
             return this;
         }
-        switch (location) {
-            case ThreadLocation.Inbox:
-                this.thread.moveToInbox();
-                break;
-            case ThreadLocation.Archive:
-                this.thread.moveToArchive();
-                break;
-            case ThreadLocation.Trash:
-                this.thread.moveToTrash();
-                break;
+        if (!this.app.dryRun) {
+            switch (location) {
+                case ThreadLocation.Inbox:
+                    this.thread.moveToInbox();
+                    break;
+                case ThreadLocation.Archive:
+                    this.thread.moveToArchive();
+                    break;
+                case ThreadLocation.Trash:
+                    this.thread.moveToTrash();
+                    break;
+            }
         }
         this.location = location;
         this.effects.push(`${from} → ${location}`);
@@ -98,7 +100,9 @@ class TakoThread {
             this.effects.push(`${labelName} already present`);
             return this;
         }
-        this.thread.addLabel(this.app.getLabelByName(labelName));
+        if (!this.app.dryRun) {
+            this.thread.addLabel(this.app.getLabelByName(labelName));
+        }
         this.labelNames.set(labelKey(labelName), labelName);
         this.effects.push(`+${labelName}`);
         return this;
@@ -109,7 +113,9 @@ class TakoThread {
             this.effects.push(`${labelName} not present`);
             return this;
         }
-        this.thread.removeLabel(this.app.getLabelByName(labelName));
+        if (!this.app.dryRun) {
+            this.thread.removeLabel(this.app.getLabelByName(labelName));
+        }
         this.labelNames.delete(labelKey(labelName));
         this.effects.push(`-${labelName}`);
         return this;

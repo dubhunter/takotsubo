@@ -11,7 +11,8 @@ class TakoApp {
     private deadline = Date.now() + RUN_DEADLINE_MS;
     private timeZone: string;
 
-    constructor() {
+    // Dry run: evaluate every rule and log what would happen, but write nothing to Gmail or user properties.
+    constructor(readonly dryRun = false) {
         this.userProperties = PropertiesService.getUserProperties();
         this.timeZone = Session.getScriptTimeZone();
         for (const label of GmailApp.getUserLabels()) {
@@ -24,18 +25,30 @@ class TakoApp {
     }
 
     private loadCursor(): number {
+        if (this.dryRun) {
+            return 0;
+        }
         return Math.floor(Number(this.userProperties.getProperty(UserProp.LastMessageTimestamp) || 0));
     }
 
     private saveCursor(cursor: number): void {
+        if (this.dryRun) {
+            return;
+        }
         this.userProperties.setProperty(UserProp.LastMessageTimestamp, cursor.toString());
     }
 
     private loadRecentMessageIds(): Map<string, number> {
+        if (this.dryRun) {
+            return new Map();
+        }
         return new Map(Object.entries(JSON.parse(this.userProperties.getProperty(UserProp.RecentMessageIds) || '{}')));
     }
 
     private saveRecentMessageIds(ids: Map<string, number>): void {
+        if (this.dryRun) {
+            return;
+        }
         this.userProperties.setProperty(UserProp.RecentMessageIds, JSON.stringify(Object.fromEntries(ids)));
     }
 
@@ -83,6 +96,10 @@ class TakoApp {
         this.log('Ensure labels...');
         for (const labelName of Object.values(LabelName)) {
             if (!this.labels.has(labelKey(labelName))) {
+                if (this.dryRun) {
+                    this.log(`Would create label: ${labelName}`);
+                    continue;
+                }
                 this.log(`Creating label: ${labelName}`);
                 this.createLabel(labelName);
             }
@@ -98,6 +115,9 @@ class TakoApp {
     }
 
     processNewMessages(): TakoApp {
+        if (this.dryRun) {
+            this.log('Dry run: nothing will be changed in Gmail.');
+        }
         this.ensureLabels();
         let cursor = this.loadCursor();
         const recentMessageIds = this.loadRecentMessageIds();
