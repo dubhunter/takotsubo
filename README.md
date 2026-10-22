@@ -34,6 +34,8 @@ npm -i
 - [Create Apps Script Project](https://script.google.com/home)
 - Get the `Script ID` from "Project Settings"
 - Add `Script ID` to `.clasp.json`
+- Turn on "Google Apps Script API" in your [Apps Script user settings](https://script.google.com/home/usersettings) (clasp cannot push without it)
+  - On a Google Workspace account, your admin may also need to allow clasp in the Admin console
 - Run `clasp login` in CLI
 
 ### Configure App
