@@ -118,7 +118,7 @@ class TakoApp {
     }
 
     listFilters(): TakoApp {
-        for (const filter of gmailFilters) {
+        for (const filter of ghFilters) {
             this.log(`Filter: ${filter.name}`);
         }
         return this;
@@ -154,7 +154,7 @@ class TakoApp {
             }
             this.log(`Thread ${i + 1}/${count}: ${thread.getSubject()} (${messages.length} messages)`);
             for (const [n, message] of messages.entries()) {
-                for (const filter of gmailFilters) {
+                for (const filter of ghFilters) {
                     if (filter.rule(message)) {
                         filter.action(message);
                         util.countUp(ruleMatches, filter.name);

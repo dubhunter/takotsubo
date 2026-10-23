@@ -1,4 +1,4 @@
-const gmailFilters: GmailFilter[] = [
+const ghFilters: GmailFilter[] = [
     {
         name: 'Approved',
         rule: t => t.bodyContains(new RegExp('@[A-Za-z0-9-]+(\\[bot\\])? approved this pull request\\.')),
@@ -74,4 +74,8 @@ const gmailFilters: GmailFilter[] = [
         action: t => t.addLabel(LabelName.TeamReview).moveToInbox({ifNotHasLabelsAny: [LabelName.Muted]}),
         lastFilter: false,
     },
+];
+
+const filterSets: FilterSet[] = [
+    {name: 'GH', query: 'label:GH', filters: ghFilters},
 ];

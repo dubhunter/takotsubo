@@ -24,6 +24,13 @@ type GmailFilter = {
     lastFilter: boolean;
 };
 
+// A search query and the filters to run on the threads it finds. Each set keeps its own cursor.
+type FilterSet = {
+    name: string;
+    query: string;
+    filters: GmailFilter[];
+};
+
 type UserConfig = {
     emailAuthor: string;
     emailCI: string;
