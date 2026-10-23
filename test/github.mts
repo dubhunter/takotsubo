@@ -12,6 +12,11 @@ function footer(reason: string): string {
 
 export function github(config: UserConfig) {
     return {
+        accountMail: (): Notification => ({
+            from: `GitHub <${config.emailAccount}>`,
+            subject: '[GitHub] "Example Org" has approved a third-party application that you use',
+            body: 'An organization owner has approved the following application to access private data in the "Example Org" organization: "Example App" from Example.\n',
+        }),
         approved: (): Notification => ({
             body: `@octocat approved this pull request.\n${footer('you are subscribed to this thread')}`,
         }),
