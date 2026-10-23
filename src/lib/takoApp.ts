@@ -33,36 +33,41 @@ class TakoApp {
         this.log(`  net: ${util.formatList(changes, 'no change')}`);
     }
 
+    // GH keeps the original keys, so existing installs need no migration.
+    private propertyKey(prop: UserProp, filterSet: FilterSet): string {
+        return filterSet.name === 'GH' ? prop : `${prop}_${filterSet.name}`;
+    }
+
     // Starts at 1, not 0: Gmail search matches nothing for after:0.
-    private loadCursor(): number {
+    private loadCursor(filterSet: FilterSet): number {
         if (this.dryRun) {
             return 1;
         }
-        return Math.floor(Number(this.userProperties.getProperty(UserProp.LastMessageTimestamp) || 1));
+        return Math.floor(Number(this.userProperties.getProperty(this.propertyKey(UserProp.LastMessageTimestamp, filterSet)) || 1));
     }
 
-    private saveCursor(cursor: number): void {
+    private saveCursor(filterSet: FilterSet, cursor: number): void {
         if (this.dryRun) {
             return;
         }
-        this.userProperties.setProperty(UserProp.LastMessageTimestamp, cursor.toString());
+        this.userProperties.setProperty(this.propertyKey(UserProp.LastMessageTimestamp, filterSet), cursor.toString());
     }
 
-    private loadRecentMessageIds(): Map<string, number> {
+    private loadRecentMessageIds(filterSet: FilterSet): Map<string, number> {
         if (this.dryRun) {
             return new Map();
         }
-        return new Map(Object.entries(JSON.parse(this.userProperties.getProperty(UserProp.RecentMessageIds) || '{}')));
+        return new Map(Object.entries(JSON.parse(this.userProperties.getProperty(this.propertyKey(UserProp.RecentMessageIds, filterSet)) || '{}')));
     }
 
-    private saveRecentMessageIds(ids: Map<string, number>): void {
+    private saveRecentMessageIds(filterSet: FilterSet, ids: Map<string, number>): void {
         if (this.dryRun) {
             return;
         }
-        this.userProperties.setProperty(UserProp.RecentMessageIds, JSON.stringify(Object.fromEntries(ids)));
+        this.userProperties.setProperty(this.propertyKey(UserProp.RecentMessageIds, filterSet), JSON.stringify(Object.fromEntries(ids)));
     }
 
-    private advanceCursor(message: TakoMessage, cursor: number, recentMessageIds: Map<string, number>): number {
+    private advanceCursor(filterSet: FilterSet, message: TakoMessage, cursor: number, recentMessageIds: Map<string, number>): number {
         // Capped at now in case a sender's clock runs fast, since the cursor never moves backward.
         const messageTime = Math.min(message.getTimestamp(), Math.floor(Date.now() / 1000));
         const newCursor = Math.max(cursor, messageTime);
@@ -73,9 +78,9 @@ class TakoApp {
             }
         }
         // Ids first: if the run dies between the writes, the thread is found again and skipped.
-        this.saveRecentMessageIds(recentMessageIds);
+        this.saveRecentMessageIds(filterSet, recentMessageIds);
         if (newCursor > cursor) {
-            this.saveCursor(newCursor);
+            this.saveCursor(filterSet, newCursor);
         }
         return newCursor;
     }
@@ -118,8 +123,11 @@ class TakoApp {
     }
 
     listFilters(): TakoApp {
-        for (const filter of ghFilters) {
-            this.log(`Filter: ${filter.name}`);
+        for (const filterSet of filterSets) {
+            this.log(`Filter set: ${filterSet.name} (${filterSet.query})`);
+            for (const filter of filterSet.filters) {
+                this.log(`  Filter: ${filter.name}`);
+            }
         }
         return this;
     }
@@ -129,10 +137,18 @@ class TakoApp {
             this.log('Dry run: nothing will be changed in Gmail.');
         }
         this.ensureLabels();
-        let cursor = this.loadCursor();
-        const recentMessageIds = this.loadRecentMessageIds();
+        for (const filterSet of filterSets) {
+            this.processFilterSet(filterSet);
+        }
+        return this;
+    }
+
+    private processFilterSet(filterSet: FilterSet): void {
+        this.log(`Filter set: ${filterSet.name}`);
+        let cursor = this.loadCursor(filterSet);
+        const recentMessageIds = this.loadRecentMessageIds(filterSet);
         // after: includes the cursor's own second, so nothing in it is missed; threads already processed are skipped below.
-        const query = `label:GH after:${cursor}`;
+        const query = `${filterSet.query} after:${cursor}`;
         const threads = this.search(query);
         const count = threads.length;
         this.log(`Found ${count} threads`);
@@ -154,7 +170,7 @@ class TakoApp {
             }
             this.log(`Thread ${i + 1}/${count}: ${thread.getSubject()} (${messages.length} messages)`);
             for (const [n, message] of messages.entries()) {
-                for (const filter of ghFilters) {
+                for (const filter of filterSet.filters) {
                     if (filter.rule(message)) {
                         filter.action(message);
                         util.countUp(ruleMatches, filter.name);
@@ -169,11 +185,10 @@ class TakoApp {
             this.logNetChanges(changes);
             changes.forEach(change => util.countUp(netChanges, change));
             processed++;
-            cursor = this.advanceCursor(newest, cursor, recentMessageIds);
+            cursor = this.advanceCursor(filterSet, newest, cursor, recentMessageIds);
         }
         this.log(`Done: processed ${processed}/${count} threads.`);
         this.log(`Rule matches (messages): ${util.formatCounts(ruleMatches)}`);
         this.log(`Net changes (threads): ${util.formatCounts(netChanges)}`);
-        return this;
     }
 }
