@@ -1,7 +1,7 @@
 const gmailFilters: GmailFilter[] = [
     {
         name: 'Approved',
-        rule: t => t.bodyContains(new RegExp('@[A-Za-z0-9-]+ approved this pull request\\.')),
+        rule: t => t.bodyContains(new RegExp('@[A-Za-z0-9-]+(\\[bot\\])? approved this pull request\\.')),
         action: t => t.addLabel(LabelName.Approved).moveToArchive({ifNotHasLabelsAny: [LabelName.Author, LabelName.DirectReview]}),
         lastFilter: false,
     },
@@ -17,7 +17,7 @@ const gmailFilters: GmailFilter[] = [
         rule: t => t.ccContains(config.emailCI),
         action: t => {
             t.addLabel(LabelName.CI);
-            if (t.subjectContains("Run cancelled:")) {
+            if (t.subjectContains(new RegExp('run cancelled:', 'i'))) {
                 t.moveToTrash();
             } else {
                 t.moveToInbox();
@@ -33,7 +33,7 @@ const gmailFilters: GmailFilter[] = [
     },
     {
         name: 'Direct Review',
-        rule: t => t.bodyContains(new RegExp('@[A-Za-z0-9-]+ requested your review on:')),
+        rule: t => t.bodyContains(new RegExp('@[A-Za-z0-9-]+(\\[bot\\])? requested your review on:')),
         action: t => t.addLabel(LabelName.DirectReview).moveToInbox({ifNotHasLabelsAny: [LabelName.Muted]}),
         lastFilter: false,
     },
@@ -51,26 +51,26 @@ const gmailFilters: GmailFilter[] = [
     },
     {
         name: 'Queued',
-        rule: t => t.bodyContains(new RegExp('#[0-9]+ was added to the \\[merge queue]')),
+        rule: t => t.bodyContains(new RegExp('#[0-9]+ was added to the \\[?merge queue')),
         action: t => t.addLabel(LabelName.Queued),
         lastFilter: false,
     },
     {
         name: 'UnQueued',
-        rule: t => t.bodyContains(new RegExp('#[0-9]+ was automatically removed from the \\[merge queue]')),
+        rule: t => t.bodyContains(new RegExp('#[0-9]+ was (automatically|manually) removed from the \\[?merge queue')),
         action: t => t.removeLabel(LabelName.Queued),
         lastFilter: false,
     },
     {
         name: 'Reopened',
         rule: t => t.hasLabel(LabelName.Closed)
-            && t.bodyContains(new RegExp('Reopened #[0-9]+\\./')),
-        action: t => t.removeLabel(LabelName.Closed),
+            && t.bodyContains(new RegExp('Reopened #[0-9]+\\.')),
+        action: t => t.removeLabel(LabelName.Closed).moveToInbox({ifNotHasLabelsAny: [LabelName.Muted]}),
         lastFilter: false,
     },
     {
         name: 'Team Review',
-        rule: t => t.bodyContains(new RegExp(`@[A-Za-z0-9-]+ requested review from ${config.usernameTeam} on:`)),
+        rule: t => t.bodyContains(new RegExp(`@[A-Za-z0-9-]+(\\[bot\\])? requested review from ${config.usernameTeam} on:`)),
         action: t => t.addLabel(LabelName.TeamReview).moveToInbox({ifNotHasLabelsAny: [LabelName.Muted]}),
         lastFilter: false,
     },
