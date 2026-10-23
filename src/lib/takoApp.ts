@@ -33,11 +33,12 @@ class TakoApp {
         this.log(`  net: ${formatList(changes, 'no change')}`);
     }
 
+    // Starts at 1, not 0: Gmail search matches nothing for after:0.
     private loadCursor(): number {
         if (this.dryRun) {
-            return 0;
+            return 1;
         }
-        return Math.floor(Number(this.userProperties.getProperty(UserProp.LastMessageTimestamp) || 0));
+        return Math.floor(Number(this.userProperties.getProperty(UserProp.LastMessageTimestamp) || 1));
     }
 
     private saveCursor(cursor: number): void {
@@ -131,8 +132,7 @@ class TakoApp {
         let cursor = this.loadCursor();
         const recentMessageIds = this.loadRecentMessageIds();
         // after: includes the cursor's own second, so nothing in it is missed; threads already processed are skipped below.
-        // after:0 matches nothing, so search everything until there is a cursor.
-        const query = cursor > 0 ? `label:GH after:${cursor}` : 'label:GH';
+        const query = `label:GH after:${cursor}`;
         const threads = this.search(query);
         const count = threads.length;
         this.log(`Found ${count} threads`);
