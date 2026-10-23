@@ -131,7 +131,8 @@ class TakoApp {
         let cursor = this.loadCursor();
         const recentMessageIds = this.loadRecentMessageIds();
         // after: includes the cursor's own second, so nothing in it is missed; threads already processed are skipped below.
-        const query = `label:GH after:${cursor}`;
+        // after:0 matches nothing, so search everything until there is a cursor.
+        const query = cursor > 0 ? `label:GH after:${cursor}` : 'label:GH';
         const threads = this.search(query);
         const count = threads.length;
         this.log(`Found ${count} threads`);
