@@ -85,12 +85,6 @@ class TakoApp {
         return newCursor;
     }
 
-    resetProperties(): TakoApp {
-        this.userProperties.deleteAllProperties();
-        this.log('User properties deleted.');
-        return this;
-    }
-
     private createLabel(labelName: string): void {
         this.labels.set(util.labelKey(labelName), GmailApp.createLabel(labelName));
     }
@@ -98,49 +92,6 @@ class TakoApp {
     private search(query: string): GoogleAppsScript.Gmail.GmailThread[] {
         this.log(`Searching: ${query}`);
         return util.fetchAllPages((start, max) => GmailApp.search(query, start, max), SEARCH_PAGE_SIZE).reverse();
-    }
-
-    getLabelByName(labelName: LabelName): GoogleAppsScript.Gmail.GmailLabel {
-        if (!this.labels.has(util.labelKey(labelName))) {
-            this.createLabel(labelName);
-        }
-        return this.labels.get(util.labelKey(labelName));
-    }
-
-    ensureLabels(): TakoApp {
-        this.log('Ensure labels...');
-        for (const labelName of Object.values(LabelName)) {
-            if (!this.labels.has(util.labelKey(labelName))) {
-                if (this.dryRun) {
-                    this.log(`Would create label: ${labelName}`);
-                    continue;
-                }
-                this.log(`Creating label: ${labelName}`);
-                this.createLabel(labelName);
-            }
-        }
-        return this;
-    }
-
-    listFilters(): TakoApp {
-        for (const filterSet of filterSets) {
-            this.log(`Filter set: ${filterSet.name} (${filterSet.query})`);
-            for (const filter of filterSet.filters) {
-                this.log(`  Filter: ${filter.name}`);
-            }
-        }
-        return this;
-    }
-
-    processNewMessages(): TakoApp {
-        if (this.dryRun) {
-            this.log('Dry run: nothing will be changed in Gmail.');
-        }
-        this.ensureLabels();
-        for (const filterSet of filterSets) {
-            this.processFilterSet(filterSet);
-        }
-        return this;
     }
 
     private processFilterSet(filterSet: FilterSet): void {
@@ -190,5 +141,54 @@ class TakoApp {
         this.log(`Done: processed ${processed}/${count} threads.`);
         this.log(`Rule matches (messages): ${util.formatCounts(ruleMatches)}`);
         this.log(`Net changes (threads): ${util.formatCounts(netChanges)}`);
+    }
+
+    getLabelByName(labelName: LabelName): GoogleAppsScript.Gmail.GmailLabel {
+        if (!this.labels.has(util.labelKey(labelName))) {
+            this.createLabel(labelName);
+        }
+        return this.labels.get(util.labelKey(labelName));
+    }
+
+    ensureLabels(): TakoApp {
+        this.log('Ensure labels...');
+        for (const labelName of Object.values(LabelName)) {
+            if (!this.labels.has(util.labelKey(labelName))) {
+                if (this.dryRun) {
+                    this.log(`Would create label: ${labelName}`);
+                    continue;
+                }
+                this.log(`Creating label: ${labelName}`);
+                this.createLabel(labelName);
+            }
+        }
+        return this;
+    }
+
+    resetProperties(): TakoApp {
+        this.userProperties.deleteAllProperties();
+        this.log('User properties deleted.');
+        return this;
+    }
+
+    listFilters(): TakoApp {
+        for (const filterSet of filterSets) {
+            this.log(`Filter set: ${filterSet.name} (${filterSet.query})`);
+            for (const filter of filterSet.filters) {
+                this.log(`  Filter: ${filter.name}`);
+            }
+        }
+        return this;
+    }
+
+    processNewMessages(): TakoApp {
+        if (this.dryRun) {
+            this.log('Dry run: nothing will be changed in Gmail.');
+        }
+        this.ensureLabels();
+        for (const filterSet of filterSets) {
+            this.processFilterSet(filterSet);
+        }
+        return this;
     }
 }
