@@ -127,6 +127,7 @@ class TakoApp {
                 continue;
             }
 
+            // Replay the whole thread oldest first: labels set by earlier messages are state for later ones.
             this.log(`Thread ${i + 1}/${count}: ${thread.getSubject()} (${messages.length} messages)`);
             for (const [n, message] of messages.entries()) {
                 for (const filter of filterSet.filters) {

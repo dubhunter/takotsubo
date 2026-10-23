@@ -1,3 +1,4 @@
+// Label and move methods act on the whole thread and return the message, so filters can chain them.
 class TakoMessage {
     constructor(readonly thread: TakoThread, readonly message: GoogleAppsScript.Gmail.GmailMessage) {}
 
@@ -9,6 +10,7 @@ class TakoMessage {
         return this.message.getDate();
     }
 
+    // In seconds, to match Gmail search's after:.
     getTimestamp(): number {
         return Math.floor(this.message.getDate().getTime() / 1000);
     }

@@ -1,3 +1,5 @@
+// Labels and location are cached for the run and updated on every write, so later rules see earlier changes.
+// Writes that would change nothing are skipped; each costs 250 to 420 ms.
 class TakoThread {
     // Label key to display name.
     private labelNames: Map<string, string>;
@@ -10,6 +12,7 @@ class TakoThread {
         this.initialLabelNames = new Map(this.labelNames);
     }
 
+    // Loaded lazily: isInInbox costs about 50 ms.
     private getLocation(): ThreadLocation {
         if (this.location === null) {
             if (this.thread.isInTrash()) {

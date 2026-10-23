@@ -1,8 +1,10 @@
+// First in the file so it is the editor's default function. Logs what every rule would do and writes nothing.
 function dryRun() {
     const app = new TakoApp(true);
     app.processNewMessages();
 }
 
+// Called by the time-driven trigger every minute.
 function run() {
     util.withScriptLock(() => {
         const app = new TakoApp();
@@ -10,6 +12,7 @@ function run() {
     });
 }
 
+// Clears every cursor, then replays all threads from the start.
 function debug() {
     util.withScriptLock(() => {
         const app = new TakoApp();
