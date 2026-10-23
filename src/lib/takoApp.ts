@@ -26,11 +26,11 @@ class TakoApp {
 
     private logAction(index: number, message: TakoMessage, filterName: string, effects: string[]): void {
         const date = Utilities.formatDate(message.getDate(), this.timeZone, 'MMM d HH:mm');
-        this.log(`  #${index + 1} ${date} ${filterName}: ${effects.join(', ') || 'no actions'}`);
+        this.log(`  #${index + 1} ${date} ${filterName}: ${formatList(effects, 'no actions')}`);
     }
 
     private logNetChanges(changes: string[]): void {
-        this.log(`  net: ${changes.join(', ') || 'no change'}`);
+        this.log(`  net: ${formatList(changes, 'no change')}`);
     }
 
     private loadCursor(): number {
