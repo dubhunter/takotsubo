@@ -70,3 +70,9 @@ Run the following command to build and deploy to GAS.
 npm run watch
 ```
 (Other commands in `package.json`)
+
+### Tests
+```shell
+npm test
+```
+Builds, then runs the compiled script in Node against fake GAS services (`test/gas/`). Rules are tested against GitHub notification emails in `test/github.mts`.

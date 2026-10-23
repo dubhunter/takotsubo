@@ -10,16 +10,17 @@ Takotsubo is a Gmail filtering engine that runs as Google Apps Script (GAS). Typ
 
 - `npm run build`: `tsc` plus copy `appsscript.json` to `dist/`
 - `npm run lint` / `npm run lint:fix`
+- `npm test`: build, type-check the tests, run them with `node --test`
 - `npm run deploy`: `clasp push -f` to the live script. Never run it; the owner deploys.
 
-There is no test runner yet (see Future work). Type-check with `npm run build` and lint.
+Tests run the built `dist/` code in Node against fakes. They cannot show real GAS behavior (quotas, timing, actual search), so say plainly when something was not run in GAS.
 
 ## Working rules
 
 - Do not run `npm run deploy` or `clasp push`.
 - Do not touch the owner's Gmail from this repo's tooling. The engine runs only inside GAS.
 - Ask before changing the behavior of an existing filter rule. The rules encode how the owner triages mail.
-- Run `npm run build` and `npm run lint` before handing code back, and say plainly that GAS behavior was not run.
+- Run `npm test` and `npm run lint` before handing code back. Add a rule test when adding or changing a rule.
 - Keep code short and readable; propose before adding abstractions.
 - Avoid em-dashes in docs and comments. Use commas, colons, or parentheses.
 - `config.ts` holds a real username and team slug. Keep install-specific values out of anything that may become public.
@@ -66,16 +67,10 @@ The owner wants separate rule sets for different Gmail accounts (work vs persona
 
 ### Testing
 
-Plan discussed, not started:
-- A `vm` loader that runs the built `dist/` files in one shared context, the way GAS does, and reads out classes and `const`s (gas-local is similar but cannot).
-- Stateful fakes typed against `@types/google-apps-script`.
-
-Tests, in order of value:
-1. Rules against cleaned-up GitHub notification emails.
-2. Thread replays (sequence in, final labels and location out).
-3. The engine: cursor, recent-id skip, deadline, dry run, per-set keys.
-
-The owner may grow this into a public GAS testing library shared with a Sheets app: full service stubs that throw "Not implemented", plus conformance tests run in real GAS. Start in this repo with Gmail only, and extract once a second app uses it.
+- `test/gas/` is a small GAS testing library: a `vm` loader (one shared scope, classes and consts readable, a fake clock) and stateful fakes for GmailApp, PropertiesService, LockService, Session, Utilities and console. It imports nothing from Takotsubo, so it can move to its own package. The owner may make it public and share it with a Sheets app.
+- Grow the fakes only as code needs them. Unsupported calls should throw `Not implemented`. Mark behavior as measured only when it was checked in real GAS.
+- Ideas: stubs for every service generated from `@types/google-apps-script`; conformance tests run against both a fake and real GAS; support for `.clasp.json` `filePushOrder`.
+- Fixtures in `test/github.mts` are written to match real GitHub mail, not copied from it. Replace them with cleaned-up real samples when a rule misses.
 
 ### Watching live runs
 
