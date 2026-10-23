@@ -3,6 +3,7 @@ enum LabelName {
     Root = 'GH',
     Approved = 'GH/Approved',
     Author = 'GH/Author',
+    Bot = 'GH/Bot',
     CI = 'GH/CI',
     Closed = 'GH/Closed',
     DirectReview = 'GH/Direct Review',

@@ -55,7 +55,7 @@ Tests run the built `dist/` code in Node against fakes. They cannot show real GA
 
 ### Time-based filter sets
 
-For example "trash Marketing after 7 days" (`in:inbox label:Marketing older_than:7d`). Such a set cannot use `after:`, needs no cursor or recent-message ids, and probably should not replay messages, since its rules are about age, not thread history. Options: a `checkpoint: false` field on `FilterSet`, or a separate filter type for these sets. Decide when the first real rule exists. Beware actions that leave the thread matching the query (it would be processed every run).
+First planned use: a GitHub cleanup set (stale bot PRs, the original half of renamed PRs, anything forgotten in the inbox). Another example: "trash Marketing after 7 days" (`in:inbox label:Marketing older_than:7d`). Such a set cannot use `after:`, needs no cursor or recent-message ids, and probably should not replay messages, since its rules are about age, not thread history. Options: a `checkpoint: false` field on `FilterSet`, or a separate filter type for these sets. Decide when the first real rule exists. Beware actions that leave the thread matching the query (it would be processed every run).
 
 ### Labels per filter set
 
@@ -76,5 +76,5 @@ The owner wants separate rule sets for different Gmail accounts (work vs persona
 
 - Rule misses on the Socket inbox. Diagnose with `dryRun()` logs and the end-of-run summary.
 - Whether Merged should archive Direct Review threads. It trashes the thread unless it has Author or Direct Review, and those stay where they are.
-- Renamed PRs start a new Gmail thread, so labels do not carry over.
+- Renamed PRs start a new Gmail thread, so labels do not carry over. The new thread lacks Direct Review or Team Review, so Merged or Closed trashes it while the original stays in the inbox (seen on depscan#28421). A fix would key state on repo and PR number, both in the subject, and sync labels across threads that share them. Deferred in favor of the time-based cleanup.
 - The CI "run cancelled" subject format is unconfirmed (no real example yet).
