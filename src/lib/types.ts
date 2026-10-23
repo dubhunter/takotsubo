@@ -1,4 +1,5 @@
 enum LabelName {
+    // Applied by the Gmail filter (from:(@github.com)), not by Takotsubo.
     Root = 'GH',
     Approved = 'GH/Approved',
     Author = 'GH/Author',
@@ -17,6 +18,8 @@ enum UserProp {
     RecentMessageIds = 'recentMessageIds',
 }
 
+// The rule and action get one message, but actions apply to its whole thread.
+// lastFilter stops later filters for that message only.
 type GmailFilter = {
     name: string;
     rule: (message: TakoMessage) => boolean;
@@ -38,6 +41,7 @@ type UserConfig = {
     usernameTeam: string;
 }
 
+// Skip the move if the thread has any of these labels. This is how Muted works.
 type MoveActionOptions = {
     ifNotHasLabelsAny?: LabelName[];
 }

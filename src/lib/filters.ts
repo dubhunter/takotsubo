@@ -1,3 +1,5 @@
+// Every filter runs on every message of a thread, oldest first, so labels act as state (for example Queued, then Merged).
+// A set's query only picks candidate threads; what happens to them is decided here.
 const filterSets: FilterSet[] = [
     {
         name: 'GitHub',
@@ -11,6 +13,7 @@ const filterSets: FilterSet[] = [
             },
             {
                 name: 'Author',
+                // The second clause is GitHub's footer when you closed or reopened the PR yourself.
                 rule: t => t.ccContains(config.emailAuthor)
                     || t.bodyContains('You are receiving this because you modified the open/close state.'),
                 action: t => t.addLabel(LabelName.Author).moveToInbox(),
@@ -67,6 +70,7 @@ const filterSets: FilterSet[] = [
             },
             {
                 name: 'Reopened',
+                // Only after a close we saw, so it can undo it (moving to the inbox also takes a thread out of the trash).
                 rule: t => t.hasLabel(LabelName.Closed)
                     && t.bodyContains(new RegExp('Reopened #[0-9]+\\.')),
                 action: t => t.removeLabel(LabelName.Closed).moveToInbox({ifNotHasLabelsAny: [LabelName.Muted]}),

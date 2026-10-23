@@ -1,3 +1,5 @@
+// Labels and location are cached for the run and updated on every write, so later rules see earlier changes.
+// Writes that would change nothing are skipped; each costs 250 to 420 ms.
 class TakoThread {
     // Label key to display name.
     private labelNames: Map<string, string>;
@@ -10,6 +12,7 @@ class TakoThread {
         this.initialLabelNames = new Map(this.labelNames);
     }
 
+    // Loaded lazily: isInInbox costs about 50 ms.
     private getLocation(): ThreadLocation {
         if (this.location === null) {
             if (this.thread.isInTrash()) {
@@ -30,11 +33,13 @@ class TakoThread {
             this.effects.push(`move to ${location} blocked by ${blockedBy}`);
             return this;
         }
+
         const from = this.getLocation();
         if (from === location) {
             this.effects.push(`already in ${location}`);
             return this;
         }
+
         if (!this.app.dryRun) {
             switch (location) {
                 case ThreadLocation.Inbox:
@@ -48,6 +53,7 @@ class TakoThread {
                     break;
             }
         }
+
         this.location = location;
         this.effects.push(`${from} → ${location}`);
         return this;
@@ -76,11 +82,13 @@ class TakoThread {
                 changes.push(`+${name}`);
             }
         }
+
         for (const [key, name] of this.initialLabelNames) {
             if (!this.labelNames.has(key)) {
                 changes.push(`-${name}`);
             }
         }
+
         if (this.location !== this.initialLocation) {
             changes.push(`${this.initialLocation} → ${this.location}`);
         }

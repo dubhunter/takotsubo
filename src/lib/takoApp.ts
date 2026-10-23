@@ -1,7 +1,9 @@
 // GmailApp.search throws above 500.
 const SEARCH_PAGE_SIZE = 500;
+
 // GAS kills a run at about 6 minutes; stop between threads before that.
 const RUN_DEADLINE_MS = 5 * 60 * 1000;
+
 // How long to remember processed messages. Search can find a thread again a few seconds after the cursor passes it.
 const RECENT_MESSAGE_WINDOW_S = 5 * 60;
 
@@ -71,12 +73,14 @@ class TakoApp {
         // Capped at now in case a sender's clock runs fast, since the cursor never moves backward.
         const messageTime = Math.min(message.getTimestamp(), Math.floor(Date.now() / 1000));
         const newCursor = Math.max(cursor, messageTime);
+
         recentMessageIds.set(message.getId(), messageTime);
         for (const [id, time] of recentMessageIds) {
             if (time < newCursor - RECENT_MESSAGE_WINDOW_S) {
                 recentMessageIds.delete(id);
             }
         }
+
         // Ids first: if the run dies between the writes, the thread is found again and skipped.
         this.saveRecentMessageIds(filterSet, recentMessageIds);
         if (newCursor > cursor) {
@@ -98,11 +102,13 @@ class TakoApp {
         this.log(`Filter set: ${filterSet.name}`);
         let cursor = this.loadCursor(filterSet);
         const recentMessageIds = this.loadRecentMessageIds(filterSet);
+
         // after: includes the cursor's own second, so nothing in it is missed; threads already processed are skipped below.
         const query = `${filterSet.query} after:${cursor}`;
         const threads = this.search(query);
         const count = threads.length;
         this.log(`Found ${count} threads`);
+
         const ruleMatches = new Map<string, number>();
         const netChanges = new Map<string, number>();
         let processed = 0;
@@ -111,6 +117,7 @@ class TakoApp {
                 this.log(`Deadline reached after ${i}/${count} threads, resuming next run.`);
                 break;
             }
+
             const thread = new TakoThread(this, gmailThread);
             const messages = thread.getMessages();
             const newest = messages[messages.length - 1];
@@ -119,6 +126,8 @@ class TakoApp {
                 this.log(`Skipping thread ${i + 1}/${count}, no new messages: ${thread.getSubject()}`);
                 continue;
             }
+
+            // Replay the whole thread oldest first: labels set by earlier messages are state for later ones.
             this.log(`Thread ${i + 1}/${count}: ${thread.getSubject()} (${messages.length} messages)`);
             for (const [n, message] of messages.entries()) {
                 for (const filter of filterSet.filters) {
@@ -127,17 +136,19 @@ class TakoApp {
                         util.countUp(ruleMatches, filter.name);
                         this.logAction(n, message, filter.name, thread.takeEffects());
                         if (filter.lastFilter) {
-                            break
+                            break;
                         }
                     }
                 }
             }
+
             const changes = thread.getNetChanges();
             this.logNetChanges(changes);
             changes.forEach(change => util.countUp(netChanges, change));
             processed++;
             cursor = this.advanceCursor(filterSet, newest, cursor, recentMessageIds);
         }
+
         this.log(`Done: processed ${processed}/${count} threads.`);
         this.log(`Rule matches (messages): ${util.formatCounts(ruleMatches)}`);
         this.log(`Net changes (threads): ${util.formatCounts(netChanges)}`);
