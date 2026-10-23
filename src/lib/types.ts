@@ -13,8 +13,8 @@ enum LabelName {
 }
 
 enum UserProp {
-    LastMessageTimestamp = 'LAST_MESSAGE_TIMESTAMP',
-    RecentMessageIds = 'RECENT_MESSAGE_IDS',
+    LastMessageTimestamp = 'lastMessageTimestamp',
+    RecentMessageIds = 'recentMessageIds',
 }
 
 type GmailFilter = {
@@ -22,6 +22,13 @@ type GmailFilter = {
     rule: (message: TakoMessage) => boolean;
     action: (message: TakoMessage) => void;
     lastFilter: boolean;
+};
+
+// A search query and the filters to run on the threads it finds. Each set keeps its own cursor.
+type FilterSet = {
+    name: string;
+    query: string;
+    filters: GmailFilter[];
 };
 
 type UserConfig = {
