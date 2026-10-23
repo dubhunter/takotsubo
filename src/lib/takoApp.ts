@@ -24,6 +24,15 @@ class TakoApp {
         console.info(message);
     }
 
+    private logAction(index: number, message: TakoMessage, filterName: string, effects: string[]): void {
+        const date = Utilities.formatDate(message.getDate(), this.timeZone, 'MMM d HH:mm');
+        this.log(`  #${index + 1} ${date} ${filterName}: ${effects.join(', ') || 'no actions'}`);
+    }
+
+    private logNetChanges(changes: string[]): void {
+        this.log(`  net: ${changes.join(', ') || 'no change'}`);
+    }
+
     private loadCursor(): number {
         if (this.dryRun) {
             return 0;
@@ -148,9 +157,7 @@ class TakoApp {
                     if (filter.rule(message)) {
                         filter.action(message);
                         countUp(ruleMatches, filter.name);
-                        const date = Utilities.formatDate(message.getDate(), this.timeZone, 'MMM d HH:mm');
-                        const effects = thread.takeEffects().join(', ') || 'no actions';
-                        this.log(`  #${n + 1} ${date} ${filter.name}: ${effects}`);
+                        this.logAction(n, message, filter.name, thread.takeEffects());
                         if (filter.lastFilter) {
                             break
                         }
@@ -158,7 +165,7 @@ class TakoApp {
                 }
             }
             const changes = thread.getNetChanges();
-            this.log(`  net: ${changes.join(', ') || 'no change'}`);
+            this.logNetChanges(changes);
             changes.forEach(change => countUp(netChanges, change));
             processed++;
             cursor = this.advanceCursor(newest, cursor, recentMessageIds);
