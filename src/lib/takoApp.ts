@@ -33,9 +33,9 @@ class TakoApp {
         this.log(`  net: ${util.formatList(changes, 'no change')}`);
     }
 
-    // GH keeps the original keys, so existing installs need no migration.
-    private propertyKey(prop: UserProp, filterSet: FilterSet): string {
-        return filterSet.name === 'GH' ? prop : `${prop}_${filterSet.name}`;
+    // Namespaced by filter set, for example GitHub.lastMessageTimestamp.
+    private propertyKey(filterSet: FilterSet, prop: UserProp): string {
+        return `${filterSet.name}.${prop}`;
     }
 
     // Starts at 1, not 0: Gmail search matches nothing for after:0.
@@ -43,28 +43,28 @@ class TakoApp {
         if (this.dryRun) {
             return 1;
         }
-        return Math.floor(Number(this.userProperties.getProperty(this.propertyKey(UserProp.LastMessageTimestamp, filterSet)) || 1));
+        return Math.floor(Number(this.userProperties.getProperty(this.propertyKey(filterSet, UserProp.LastMessageTimestamp)) || 1));
     }
 
     private saveCursor(filterSet: FilterSet, cursor: number): void {
         if (this.dryRun) {
             return;
         }
-        this.userProperties.setProperty(this.propertyKey(UserProp.LastMessageTimestamp, filterSet), cursor.toString());
+        this.userProperties.setProperty(this.propertyKey(filterSet, UserProp.LastMessageTimestamp), cursor.toString());
     }
 
     private loadRecentMessageIds(filterSet: FilterSet): Map<string, number> {
         if (this.dryRun) {
             return new Map();
         }
-        return new Map(Object.entries(JSON.parse(this.userProperties.getProperty(this.propertyKey(UserProp.RecentMessageIds, filterSet)) || '{}')));
+        return new Map(Object.entries(JSON.parse(this.userProperties.getProperty(this.propertyKey(filterSet, UserProp.RecentMessageIds)) || '{}')));
     }
 
     private saveRecentMessageIds(filterSet: FilterSet, ids: Map<string, number>): void {
         if (this.dryRun) {
             return;
         }
-        this.userProperties.setProperty(this.propertyKey(UserProp.RecentMessageIds, filterSet), JSON.stringify(Object.fromEntries(ids)));
+        this.userProperties.setProperty(this.propertyKey(filterSet, UserProp.RecentMessageIds), JSON.stringify(Object.fromEntries(ids)));
     }
 
     private advanceCursor(filterSet: FilterSet, message: TakoMessage, cursor: number, recentMessageIds: Map<string, number>): number {
