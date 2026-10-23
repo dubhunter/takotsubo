@@ -5,6 +5,10 @@ class TakoMessage {
         return this.message.getId();
     }
 
+    getDate(): GoogleAppsScript.Base.Date {
+        return this.message.getDate();
+    }
+
     getTimestamp(): number {
         return Math.floor(this.message.getDate().getTime() / 1000);
     }

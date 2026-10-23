@@ -9,9 +9,12 @@ class TakoApp {
     private userProperties: GoogleAppsScript.Properties.Properties;
     private labels = new Map<string, GoogleAppsScript.Gmail.GmailLabel>();
     private deadline = Date.now() + RUN_DEADLINE_MS;
+    private timeZone: string;
 
-    constructor() {
+    // Dry run: evaluate every rule and log what would happen, but write nothing to Gmail or user properties.
+    constructor(readonly dryRun = false) {
         this.userProperties = PropertiesService.getUserProperties();
+        this.timeZone = Session.getScriptTimeZone();
         for (const label of GmailApp.getUserLabels()) {
             this.labels.set(labelKey(label.getName()), label);
         }
@@ -21,19 +24,40 @@ class TakoApp {
         console.info(message);
     }
 
+    private logAction(index: number, message: TakoMessage, filterName: string, effects: string[]): void {
+        const date = Utilities.formatDate(message.getDate(), this.timeZone, 'MMM d HH:mm');
+        this.log(`  #${index + 1} ${date} ${filterName}: ${formatList(effects, 'no actions')}`);
+    }
+
+    private logNetChanges(changes: string[]): void {
+        this.log(`  net: ${formatList(changes, 'no change')}`);
+    }
+
     private loadCursor(): number {
+        if (this.dryRun) {
+            return 0;
+        }
         return Math.floor(Number(this.userProperties.getProperty(UserProp.LastMessageTimestamp) || 0));
     }
 
     private saveCursor(cursor: number): void {
+        if (this.dryRun) {
+            return;
+        }
         this.userProperties.setProperty(UserProp.LastMessageTimestamp, cursor.toString());
     }
 
     private loadRecentMessageIds(): Map<string, number> {
+        if (this.dryRun) {
+            return new Map();
+        }
         return new Map(Object.entries(JSON.parse(this.userProperties.getProperty(UserProp.RecentMessageIds) || '{}')));
     }
 
     private saveRecentMessageIds(ids: Map<string, number>): void {
+        if (this.dryRun) {
+            return;
+        }
         this.userProperties.setProperty(UserProp.RecentMessageIds, JSON.stringify(Object.fromEntries(ids)));
     }
 
@@ -81,6 +105,10 @@ class TakoApp {
         this.log('Ensure labels...');
         for (const labelName of Object.values(LabelName)) {
             if (!this.labels.has(labelKey(labelName))) {
+                if (this.dryRun) {
+                    this.log(`Would create label: ${labelName}`);
+                    continue;
+                }
                 this.log(`Creating label: ${labelName}`);
                 this.createLabel(labelName);
             }
@@ -96,6 +124,9 @@ class TakoApp {
     }
 
     processNewMessages(): TakoApp {
+        if (this.dryRun) {
+            this.log('Dry run: nothing will be changed in Gmail.');
+        }
         this.ensureLabels();
         let cursor = this.loadCursor();
         const recentMessageIds = this.loadRecentMessageIds();
@@ -104,6 +135,9 @@ class TakoApp {
         const threads = this.search(query);
         const count = threads.length;
         this.log(`Found ${count} threads`);
+        const ruleMatches = new Map<string, number>();
+        const netChanges = new Map<string, number>();
+        let processed = 0;
         for (const [i, gmailThread] of threads.entries()) {
             if (Date.now() > this.deadline) {
                 this.log(`Deadline reached after ${i}/${count} threads, resuming next run.`);
@@ -117,21 +151,28 @@ class TakoApp {
                 this.log(`Skipping thread ${i + 1}/${count}, no new messages: ${thread.getSubject()}`);
                 continue;
             }
-            this.log(`Processing thread ${i + 1}/${count}: ${thread.getSubject()}`);
-            for (const message of messages) {
+            this.log(`Thread ${i + 1}/${count}: ${thread.getSubject()} (${messages.length} messages)`);
+            for (const [n, message] of messages.entries()) {
                 for (const filter of gmailFilters) {
                     if (filter.rule(message)) {
-                        this.log(`Running action for filter: ${filter.name}`);
                         filter.action(message);
+                        countUp(ruleMatches, filter.name);
+                        this.logAction(n, message, filter.name, thread.takeEffects());
                         if (filter.lastFilter) {
                             break
                         }
                     }
                 }
             }
+            const changes = thread.getNetChanges();
+            this.logNetChanges(changes);
+            changes.forEach(change => countUp(netChanges, change));
+            processed++;
             cursor = this.advanceCursor(newest, cursor, recentMessageIds);
         }
-        this.log('Done!');
+        this.log(`Done: processed ${processed}/${count} threads.`);
+        this.log(`Rule matches (messages): ${formatCounts(ruleMatches)}`);
+        this.log(`Net changes (threads): ${formatCounts(netChanges)}`);
         return this;
     }
 }
