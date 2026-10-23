@@ -30,11 +30,13 @@ class TakoThread {
             this.effects.push(`move to ${location} blocked by ${blockedBy}`);
             return this;
         }
+
         const from = this.getLocation();
         if (from === location) {
             this.effects.push(`already in ${location}`);
             return this;
         }
+
         if (!this.app.dryRun) {
             switch (location) {
                 case ThreadLocation.Inbox:
@@ -48,6 +50,7 @@ class TakoThread {
                     break;
             }
         }
+
         this.location = location;
         this.effects.push(`${from} → ${location}`);
         return this;
@@ -76,11 +79,13 @@ class TakoThread {
                 changes.push(`+${name}`);
             }
         }
+
         for (const [key, name] of this.initialLabelNames) {
             if (!this.labelNames.has(key)) {
                 changes.push(`-${name}`);
             }
         }
+
         if (this.location !== this.initialLocation) {
             changes.push(`${this.initialLocation} → ${this.location}`);
         }
