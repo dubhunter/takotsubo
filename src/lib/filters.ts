@@ -82,6 +82,14 @@ const filterSets: FilterSet[] = [
                 action: t => t.addLabel(LabelName.TeamReview).moveToInbox({ifNotHasLabelsAny: [LabelName.Muted]}),
                 lastFilter: false,
             },
+            {
+                // Linear's comment pasting the linked ticket into the PR; nothing to act on.
+                // Last, so Author still labels your PR before this archives it.
+                name: 'Linear Linkback',
+                rule: t => t.bodyContains('<!-- linear-linkback -->'),
+                action: t => t.moveToArchive(),
+                lastFilter: false,
+            },
         ],
     },
 ];

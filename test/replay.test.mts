@@ -59,6 +59,15 @@ test('approved, then a mention: the later mention wins', () => {
     assert.equal(thread.location, 'inbox');
 });
 
+test('Linear linkback, then a comment on your PR: the comment brings it back to the inbox', () => {
+    const tako = loadTako();
+    const mail = github(tako.config);
+    const thread = tako.addThread([mail.linearLinkback(), mail.commentOnYourPr()]);
+    tako.run();
+    assert.deepEqual(thread.labelNames(), ['GH', 'GH/Author']);
+    assert.equal(thread.location, 'inbox');
+});
+
 test('muted: a mention and a review request leave it archived', () => {
     const tako = loadTako();
     const mail = github(tako.config);

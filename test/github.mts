@@ -59,6 +59,10 @@ export function github(config: UserConfig) {
         teamReviewRequested: (): Notification => ({
             body: `@review-bot[bot] requested review from ${config.usernameTeam} on: ${REPO}#${PR} Add a feature.\n${footer('your team was requested to review')}`,
         }),
+        linearLinkback: (): Notification => ({
+            cc: `Example <${config.emailAuthor}>`,
+            body: `linear-code[bot] left a comment (${REPO}#${PR})\n\n<!-- linear-linkback -->\n<details>\n<summary>EX-1 Add a feature</summary>\n<p>The ticket description.</p>\n</details>\n<!-- linear-review-link -->\n${footer('you authored the thread')}`,
+        }),
         comment: (): Notification => ({
             body: `Thanks, updated.\n${footer('you are subscribed to this thread')}`,
         }),
