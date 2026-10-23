@@ -47,18 +47,18 @@ class TakoMessage {
     }
 
     fromContains(search: RegExp | string) {
-        return stringContains(this.message.getFrom(), search);
+        return util.stringContains(this.message.getFrom(), search);
     }
 
     ccContains(search: RegExp | string) {
-        return stringContains(this.message.getCc(), search);
+        return util.stringContains(this.message.getCc(), search);
     }
 
     subjectContains(search: RegExp | string) {
-        return stringContains(this.message.getSubject(), search);
+        return util.stringContains(this.message.getSubject(), search);
     }
 
     bodyContains(search: RegExp | string) {
-        return stringContains(this.message.getPlainBody(), search);
+        return util.stringContains(this.message.getPlainBody(), search);
     }
 }

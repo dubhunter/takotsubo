@@ -6,7 +6,7 @@ class TakoThread {
     private initialLocation: ThreadLocation | null = null;
     private effects: string[] = [];
     constructor(readonly app: TakoApp, readonly thread: GoogleAppsScript.Gmail.GmailThread) {
-        this.labelNames = new Map(this.thread.getLabels().map(label => [labelKey(label.getName()), label.getName()]));
+        this.labelNames = new Map(this.thread.getLabels().map(label => [util.labelKey(label.getName()), label.getName()]));
         this.initialLabelNames = new Map(this.labelNames);
     }
 
@@ -88,7 +88,7 @@ class TakoThread {
     }
 
     hasLabel(labelName: LabelName): boolean {
-        return this.labelNames.has(labelKey(labelName));
+        return this.labelNames.has(util.labelKey(labelName));
     }
 
     hasLabelsAny(labelNames: LabelName[]): boolean {
@@ -103,7 +103,7 @@ class TakoThread {
         if (!this.app.dryRun) {
             this.thread.addLabel(this.app.getLabelByName(labelName));
         }
-        this.labelNames.set(labelKey(labelName), labelName);
+        this.labelNames.set(util.labelKey(labelName), labelName);
         this.effects.push(`+${labelName}`);
         return this;
     }
@@ -116,7 +116,7 @@ class TakoThread {
         if (!this.app.dryRun) {
             this.thread.removeLabel(this.app.getLabelByName(labelName));
         }
-        this.labelNames.delete(labelKey(labelName));
+        this.labelNames.delete(util.labelKey(labelName));
         this.effects.push(`-${labelName}`);
         return this;
     }

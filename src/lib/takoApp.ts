@@ -16,7 +16,7 @@ class TakoApp {
         this.userProperties = PropertiesService.getUserProperties();
         this.timeZone = Session.getScriptTimeZone();
         for (const label of GmailApp.getUserLabels()) {
-            this.labels.set(labelKey(label.getName()), label);
+            this.labels.set(util.labelKey(label.getName()), label);
         }
     }
 
@@ -26,11 +26,11 @@ class TakoApp {
 
     private logAction(index: number, message: TakoMessage, filterName: string, effects: string[]): void {
         const date = Utilities.formatDate(message.getDate(), this.timeZone, 'MMM d HH:mm');
-        this.log(`  #${index + 1} ${date} ${filterName}: ${formatList(effects, 'no actions')}`);
+        this.log(`  #${index + 1} ${date} ${filterName}: ${util.formatList(effects, 'no actions')}`);
     }
 
     private logNetChanges(changes: string[]): void {
-        this.log(`  net: ${formatList(changes, 'no change')}`);
+        this.log(`  net: ${util.formatList(changes, 'no change')}`);
     }
 
     // Starts at 1, not 0: Gmail search matches nothing for after:0.
@@ -87,25 +87,25 @@ class TakoApp {
     }
 
     private createLabel(labelName: string): void {
-        this.labels.set(labelKey(labelName), GmailApp.createLabel(labelName));
+        this.labels.set(util.labelKey(labelName), GmailApp.createLabel(labelName));
     }
 
     private search(query: string): GoogleAppsScript.Gmail.GmailThread[] {
         this.log(`Searching: ${query}`);
-        return fetchAllPages((start, max) => GmailApp.search(query, start, max), SEARCH_PAGE_SIZE).reverse();
+        return util.fetchAllPages((start, max) => GmailApp.search(query, start, max), SEARCH_PAGE_SIZE).reverse();
     }
 
     getLabelByName(labelName: LabelName): GoogleAppsScript.Gmail.GmailLabel {
-        if (!this.labels.has(labelKey(labelName))) {
+        if (!this.labels.has(util.labelKey(labelName))) {
             this.createLabel(labelName);
         }
-        return this.labels.get(labelKey(labelName));
+        return this.labels.get(util.labelKey(labelName));
     }
 
     ensureLabels(): TakoApp {
         this.log('Ensure labels...');
         for (const labelName of Object.values(LabelName)) {
-            if (!this.labels.has(labelKey(labelName))) {
+            if (!this.labels.has(util.labelKey(labelName))) {
                 if (this.dryRun) {
                     this.log(`Would create label: ${labelName}`);
                     continue;
@@ -157,7 +157,7 @@ class TakoApp {
                 for (const filter of gmailFilters) {
                     if (filter.rule(message)) {
                         filter.action(message);
-                        countUp(ruleMatches, filter.name);
+                        util.countUp(ruleMatches, filter.name);
                         this.logAction(n, message, filter.name, thread.takeEffects());
                         if (filter.lastFilter) {
                             break
@@ -167,13 +167,13 @@ class TakoApp {
             }
             const changes = thread.getNetChanges();
             this.logNetChanges(changes);
-            changes.forEach(change => countUp(netChanges, change));
+            changes.forEach(change => util.countUp(netChanges, change));
             processed++;
             cursor = this.advanceCursor(newest, cursor, recentMessageIds);
         }
         this.log(`Done: processed ${processed}/${count} threads.`);
-        this.log(`Rule matches (messages): ${formatCounts(ruleMatches)}`);
-        this.log(`Net changes (threads): ${formatCounts(netChanges)}`);
+        this.log(`Rule matches (messages): ${util.formatCounts(ruleMatches)}`);
+        this.log(`Net changes (threads): ${util.formatCounts(netChanges)}`);
         return this;
     }
 }

@@ -1,22 +1,21 @@
+function dryRun() {
+    const app = new TakoApp(true);
+    app.processNewMessages();
+}
+
 function run() {
-    withScriptLock(() => {
+    util.withScriptLock(() => {
         const app = new TakoApp();
         app.processNewMessages();
     });
 }
 
 function debug() {
-    withScriptLock(() => {
+    util.withScriptLock(() => {
         const app = new TakoApp();
         app.resetProperties();
         app.processNewMessages();
     });
-}
-
-// Evaluates every rule over all GH mail and logs what would happen. Changes nothing.
-function dryRun() {
-    const app = new TakoApp(true);
-    app.processNewMessages();
 }
 
 function ensureLabels() {
