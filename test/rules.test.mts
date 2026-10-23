@@ -35,6 +35,8 @@ const cases: Case[] = [
     {name: 'Reopened restores a closed thread', notification: m => m.reopened(), labels: ['GH/Closed'], expectLabels: [], expectLocation: 'inbox'},
     {name: 'Reopened needs Closed', notification: m => m.reopened(), expectLabels: [], expectLocation: 'archive'},
     {name: 'Team Review', notification: m => m.teamReviewRequested(), expectLabels: ['GH/Team Review'], expectLocation: 'inbox'},
+    {name: 'Bot PR requesting your review', notification: m => m.reviewRequestedByBot(), expectLabels: ['GH/Bot', 'GH/Direct Review'], expectLocation: 'inbox'},
+    {name: 'Bot PR requesting your team\'s review', notification: m => m.teamReviewRequestedByBot(), expectLabels: ['GH/Bot', 'GH/Team Review'], expectLocation: 'inbox'},
     {name: 'Linear Linkback archives, after Author labels it', notification: m => m.linearLinkback(), location: 'inbox', expectLabels: ['GH/Author'], expectLocation: 'archive'},
     {name: 'A plain comment does nothing', notification: m => m.comment(), expectLabels: [], expectLocation: 'archive'},
 ];

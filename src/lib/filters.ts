@@ -89,6 +89,13 @@ const filterSets: FilterSet[] = [
                 lastFilter: false,
             },
             {
+                // A PR opened by a bot (release bumps, dependabot), seen when it requests a review.
+                name: 'Bot',
+                rule: t => t.bodyContains(new RegExp('@[A-Za-z0-9-]+\\[bot\\] requested (your review|review from)')),
+                action: t => t.addLabel(LabelName.Bot),
+                lastFilter: false,
+            },
+            {
                 // Linear's comment pasting the linked ticket into the PR; nothing to act on.
                 name: 'Linear Linkback',
                 rule: t => t.bodyContains('<!-- linear-linkback -->'),
