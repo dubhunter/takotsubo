@@ -15,6 +15,8 @@ type Case = {
 };
 
 const cases: Case[] = [
+    {name: 'Account mail goes to the inbox', notification: m => m.accountMail(), expectLabels: ['GH/Account'], expectLocation: 'inbox'},
+    {name: 'Account mail ignores Muted', notification: m => m.accountMail(), labels: ['GH/Muted'], expectLabels: ['GH/Account', 'GH/Muted'], expectLocation: 'inbox'},
     {name: 'Approved archives', notification: m => m.approved(), location: 'inbox', expectLabels: ['GH/Approved'], expectLocation: 'archive'},
     {name: 'Approved by a bot', notification: m => m.approvedByBot(), location: 'inbox', expectLabels: ['GH/Approved'], expectLocation: 'archive'},
     {name: 'Approved stays put on your PR', notification: m => m.approved(), labels: ['GH/Author'], location: 'inbox', expectLabels: ['GH/Approved', 'GH/Author'], expectLocation: 'inbox'},

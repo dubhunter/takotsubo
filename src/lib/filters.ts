@@ -6,6 +6,14 @@ const filterSets: FilterSet[] = [
         name: 'GitHub',
         query: 'label:GH',
         filters: [
+            // Account and organization mail (security, apps, invitations), not repo activity.
+            {
+                name: 'Account',
+                rule: t => t.fromContains(config.emailAccount),
+                action: t => t.addLabel(LabelName.Account).moveToInbox(),
+                lastFilter: false,
+            },
+
             // Your relationship to the PR. These run first, so the guards below see them.
             {
                 name: 'Author',

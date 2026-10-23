@@ -1,6 +1,7 @@
 enum LabelName {
     // Applied by the Gmail filter (from:(@github.com)), not by Takotsubo.
     Root = 'GH',
+    Account = 'GH/Account',
     Approved = 'GH/Approved',
     Author = 'GH/Author',
     Bot = 'GH/Bot',
@@ -36,6 +37,7 @@ type FilterSet = {
 };
 
 type UserConfig = {
+    emailAccount: string;
     emailAuthor: string;
     emailCI: string;
     usernameUser: string;
