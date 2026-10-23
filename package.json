@@ -5,6 +5,7 @@
   "devDependencies": {
     "@eslint/js": "^9.38.0",
     "@types/google-apps-script": "^2.0.7",
+    "@types/node": "^24.19.2",
     "chokidar-cli": "^3.0.0",
     "concurrently": "^9.2.1",
     "eslint": "^9.38.0",
@@ -20,6 +21,7 @@
     "manifest:watch": "chokidar --initial appsscript.json -c \"cp {path} dist/\"",
     "build": "tsc && npm run manifest",
     "build:watch": "tsc --watch",
+    "test": "npm run build && tsc -p tsconfig.test.json && node --test 'test/**/*.test.mts'",
     "deploy": "clasp push -f",
     "deploy:watch": "clasp push -f --watch",
     "watch": "npx concurrently \"npm:manifest:watch\" \"npm:build:watch\" \"npm:deploy:watch\"",

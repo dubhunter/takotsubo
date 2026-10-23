@@ -1,0 +1,15 @@
+{
+  // Type-checks the tests (test/**/*.mts) against the GAS sources. Node runs the tests directly, so nothing is emitted.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "moduleDetection": "legacy",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "types": ["@types/google-apps-script", "node"]
+  },
+  "include": ["src/**/*.ts", "test/**/*.mts"]
+}
